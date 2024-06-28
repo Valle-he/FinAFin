@@ -41,11 +41,6 @@ def fetch_stock_data(ticker):
     hist = stock.history(period='5y')
     return hist
 
-# Function to calculate Cost of Equity
-def calculate_cost_of_equity(risk_free_rate, beta, average_market_return):
-    cost_of_equity = risk_free_rate + beta * (average_market_return - risk_free_rate)
-    return cost_of_equity
-
 # Function to analyze stock based on ticker symbol
 def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
@@ -71,6 +66,11 @@ def analyze_stock(ticker):
     # Calculate correlation with market (S&P 500)
     correlation = hist['Log Return'].corr(sp500['Log Return'])
     
+    # Function to calculate Cost of Equity
+    def calculate_cost_of_equity(risk_free_rate, beta, average_market_return):
+        cost_of_equity = risk_free_rate + beta * (average_market_return - risk_free_rate)
+        return cost_of_equity
+
     # Use FRED API to get current 10-year Treasury rate
     fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
@@ -79,10 +79,10 @@ def analyze_stock(ticker):
     # Calculate average market return (you may need to adjust this calculation based on your data)
     # Example: Using S&P 500 index return as average market return
     average_market_return = sp500['Log Return'].mean() * 252
-    
+
     # Calculate Cost of Equity
     cost_of_equity = calculate_cost_of_equity(risk_free_rate, beta, average_market_return)
-
+    
     analysis = {
         'Ticker': ticker,
         'P/E Ratio': info.get('trailingPE'),
@@ -185,70 +185,119 @@ def optimize_portfolio(tickers, min_weight, max_weight):
         weights /= np.sum(weights)
         weight_array[i, :] = weights
 
-    optimized = minimize(objective, num_assets * [1. / num_assets, ], method='SLSQP',
-                         bounds=bounds, constraints=constraints)
+    optimized = minimize(objective, num_assets * [1. / num_assets,], method='SLSQP', bounds=bounds, constraints=constraints)
 
-    optimal_weights = optimized['x'].round(3)
-    optimal_sharpe_ratio = -optimized['fun'].round(2)
+    optimal_weights = optimized['x']
+    optimal_portfolio_return = expected_return(optimal_weights, log_returns)
+    optimal_portfolio_volatility = standard_deviation(optimal_weights, cov_matrix)
+    optimal_sharpe_ratio = sharpe_ratio(optimal_weights, log_returns, cov_matrix, risk_free_rate)
 
-    results[0, :] = np.sum(log_returns.mean() * optimal_weights) * 252
-    results[1, :] = np.sqrt(np.dot(optimal_weights.T, np.dot(log_returns.cov() * 252, optimal_weights)))
-    results[2, :] = results[0, :] / results[1, :]
-    return results, optimal_weights
+    return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
 
-# Main function to run Streamlit app
-def main():
-    st.title('Stock Analysis Dashboard')
-    st.sidebar.header('User Inputs')
+# Streamlit App
+st.title('Stock and Portfolio Analysis')
+
+# Sidebar for Stock Analysis Input
+st.sidebar.header('Stock Analysis Input')
+ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
+
+if st.sidebar.button("Analyze Stock"):
+    # Analyze stock
+    if ticker:
+        result = analyze_stock(ticker)
+        
+        st.subheader(f'Stock Analysis Results for {ticker}')
+        
+        # Sort and group ratios by type
+        grouped_ratios = {
+            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
+            'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
+            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
+            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
+            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
+            'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
+            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
+        }
+        
+        for group_name, ratios in grouped_ratios.items():
+            st.subheader(group_name)
+            for ratio in ratios:
+                if result[ratio] is not None:
+                    st.write(f"**{ratio}**: {result[ratio]}")
+            st.write("---")
+        
+        # Risk Management section
+        st.subheader('Risk Management Metrics')
+        st.write(f"**Volatility**: {result['Volatility']:.4f}")
+        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
+        st.write(f"**Beta**: {result['Beta']:.4f}")
+        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+        st.write("---")
+        
+        # Market Metrics section
+        st.subheader('Market Metrics')
+        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
+        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
+        st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
+        st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
+        st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
+        st.write("---")
+        
+        # Display current and historical closing prices
+        st.subheader(f'Current and Historical Closing Prices for {ticker}')
+        st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
+        st.line_chart(result['Historical Prices']['Close'])
+
+        # Calculate news sentiment
+        try:
+            news_data = get_news_data(ticker)
+            # Analyze sentiment
+            sentiments = analyze_sentiment(news_data)
+            # Calculate average sentiment
+            avg_sentiment = np.mean(sentiments)
+
+            st.subheader('News Sentiment Analysis')
+            st.write(f"Average Sentiment for {ticker}: {avg_sentiment:.2f}")
+
+            # Display news articles
+            st.subheader('Latest News Articles')
+            for article in news_data[:5]:  # Displaying only the first 5 articles
+                st.write(f"**Published At**: {article[0]}")
+                st.write(f"**Title**: {article[1]}")
+                st.write(f"**Summary**: {article[2]}")
+                st.write('---')
+
+        except Exception as e:
+            st.error(f"Error fetching news data: {str(e)}")
+
+# Sidebar for Portfolio Optimization Input
+st.sidebar.header('Portfolio Optimization Input')
+tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
+tickers = [ticker.strip() for ticker in tickers_input.split(',')]
+
+min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100, value=5)
+max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
+
+if st.sidebar.button("Optimize Portfolio"):
+    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
     
-    ticker = st.sidebar.text_input('Enter Ticker Symbol', 'AAPL')
-    analysis_type = st.sidebar.selectbox('Select Analysis Type', ['Stock Analysis', 'Portfolio Optimization'])
-    
-    if analysis_type == 'Stock Analysis':
-        if st.sidebar.button('Analyze'):
-            analysis_result = analyze_stock(ticker)
-            st.subheader('Stock Analysis Result')
-            st.write(f"Analysis for {analysis_result['Ticker']}")
+    st.subheader("Optimal Portfolio Metrics:")
+    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
+    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
+    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
 
-            st.subheader('Market Metrics')
-            st.write(pd.DataFrame({
-                'Beta': analysis_result['Beta'],
-                'Market Correlation': analysis_result['Market Correlation'],
-                'Cost of Equity': analysis_result['Cost of Equity']
-            }, index=[0]))
+    st.subheader("Optimal Weights:")
+    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
+    st.write(optimal_weights_df)
 
-            st.subheader('Key Metrics')
-            st.write(pd.DataFrame(analysis_result, index=[0]).transpose())
+    # Plot Portfolio Allocation
+    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
+    st.plotly_chart(fig)
 
-            st.subheader('Historical Prices')
-            st.line_chart(analysis_result['Historical Prices']['Close'])
-
-            st.subheader('Volatility Analysis')
-            st.write(f"Volatility (Annualized): {analysis_result['Volatility']:.2%}")
-
-            st.subheader('Max Drawdown Analysis')
-            st.write(f"Maximum Drawdown: {analysis_result['Max Drawdown']:.2%}")
-
-    elif analysis_type == 'Portfolio Optimization':
-        st.sidebar.subheader('Portfolio Optimization Inputs')
-        num_assets = st.sidebar.slider('Number of Assets', 2, 10, 5)
-        min_weight = st.sidebar.slider('Minimum Weight (%)', 1, 20, 5)
-        max_weight = st.sidebar.slider('Maximum Weight (%)', 30, 100, 30)
-
-        tickers = []
-        for i in range(num_assets):
-            tickers.append(st.sidebar.text_input(f'Enter Ticker Symbol {i+1}', value='AAPL'))
-
-        if st.sidebar.button('Optimize'):
-            results, optimal_weights = optimize_portfolio(tickers, min_weight, max_weight)
-            st.subheader('Portfolio Optimization Result')
-
-            df_results = pd.DataFrame(results.T, columns=['Expected Return', 'Volatility', 'Sharpe Ratio'])
-            df_results['Weights'] = optimal_weights
-            st.write(df_results)
-
-if __name__ == '__main__':
-    main()
+    # Display current and historical closing prices for optimized portfolio
+    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
+    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
+    st.line_chart(optimized_portfolio_prices)
 
 
 
