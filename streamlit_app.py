@@ -8,11 +8,12 @@ from datetime import datetime, timedelta
 from fredapi import Fred
 import plotly.express as px
 from scipy.optimize import minimize
+import ta  # Importiert die Bibliothek für technische Indikatoren
 
-# Alpha Vantage API Key for News Sentiment
+# Alpha Vantage API Key für News Sentiment
 alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
 
-# Function to fetch news data using Alpha Vantage News API
+# Funktion zum Abrufen von News-Daten über die Alpha Vantage News API
 def get_news_data(ticker):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={alpha_vantage_api_key}'
     response = requests.get(url)
@@ -26,7 +27,7 @@ def get_news_data(ticker):
         news_list.append([published_at, title, description])
     return news_list
 
-# Function to analyze sentiment using TextBlob
+# Funktion zur Analyse des Sentiments mithilfe von TextBlob
 def analyze_sentiment(news_data):
     sentiments = []
     for entry in news_data:
@@ -35,16 +36,27 @@ def analyze_sentiment(news_data):
         sentiments.append(sentiment_score)
     return sentiments
 
-# Function to fetch stock data from Yahoo Finance
+# Funktion zum Abrufen von Aktiendaten von Yahoo Finance
 def fetch_stock_data(ticker):
     stock = yf.Ticker(ticker)
     hist = stock.history(period='5y')
     return hist
 
-# Function to analyze stock based on ticker symbol
+# Funktion zur Analyse der Aktie basierend auf dem Tickersymbol
 def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
+
+    # Laden von technischen Indikatoren mithilfe von 'ta' (technical analysis) Bibliothek
+    hist = fetch_stock_data(ticker)
+    hist = ta.add_all_ta_features(hist, open='Open', high='High', low='Low', close='Close', volume='Volume', fillna=True)
+    technical_indicators = {
+        'SMA (Simple Moving Average)': ta.sma_indicator(hist['Close'], window=20),
+        'EMA (Exponential Moving Average)': ta.ema_indicator(hist['Close'], window=20),
+        'RSI (Relative Strength Index)': ta.rsi(hist['Close'], window=14),
+        'MACD (Moving Average Convergence Divergence)': ta.macd(hist['Close'], window_fast=12, window_slow=26, window_sign=9)['MACD'],
+        'Bollinger Bands': ta.bollinger_hband_indicator(hist['Close'], window=20, std=2),
+    }
 
     analysis = {
         'Ticker': ticker,
@@ -83,32 +95,33 @@ def analyze_stock(ticker):
         'Current Ratio': info.get('currentRatio'),
         'Operating Cashflow (Million $)': info.get('operatingCashflow') / 1e6 if info.get('operatingCashflow') else None,
         'Levered Free Cashflow (Million $)': info.get('leveredFreeCashflow') / 1e6 if info.get('leveredFreeCashflow') else None,
-        'Historical Prices': fetch_stock_data(ticker)
+        'Historical Prices': hist,
+        'Technical Indicators': technical_indicators
     }
-    
+
     return analysis
 
-# Function for portfolio optimization
+# Funktion für die Portfolio-Optimierung
 def optimize_portfolio(tickers, min_weight, max_weight):
-    # Define date range
+    # Definiere den Datumsbereich
     end_date = datetime.today()
     start_date = end_date - timedelta(days=5*365)
 
-    # Create dataframe for adjusted closing prices
+    # Erstelle DataFrame für angepasste Schlusskurse
     adj_close_df = pd.DataFrame()
 
     for ticker in tickers:
         data = yf.download(ticker, start=start_date, end=end_date)
         adj_close_df[ticker] = data['Adj Close']
 
-    # Calculate log returns
+    # Berechne logarithmische Renditen
     log_returns = np.log(adj_close_df / adj_close_df.shift(1))
     log_returns = log_returns.dropna()
 
-    # Calculate covariance matrix
+    # Berechne Kovarianzmatrix
     cov_matrix = log_returns.cov() * 252
 
-    # Functions for standard deviation, expected return, and Sharpe ratio
+    # Funktionen für Standardabweichung, erwartete Rendite und Sharpe-Ratio
     def standard_deviation(weights, cov_matrix):
         variance = weights.T @ cov_matrix @ weights
         return np.sqrt(variance)
@@ -119,12 +132,12 @@ def optimize_portfolio(tickers, min_weight, max_weight):
     def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
         return (expected_return(weights, log_returns) - risk_free_rate) / standard_deviation(weights, cov_matrix)
 
-    # Use FRED API to get current 10-year Treasury rate
+    # Verwende FRED-API, um den aktuellen 10-jährigen Schatzsatz zu erhalten
     fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
 
-    # Optimize Sharpe ratio using an iterative approach
+    # Optimiere Sharpe-Ratio mit einem iterativen Ansatz
     num_assets = len(tickers)
     num_portfolios = 10000
     results = np.zeros((3, num_portfolios))
@@ -135,7 +148,7 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 
     constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
 
-    # Set boundaries for weights
+    # Setze Grenzen für Gewichte
     bounds = [(min_weight / 100, max_weight / 100)] * num_assets
 
     for i in range(num_portfolios):
@@ -155,18 +168,18 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
 
-# Sidebar for Stock Analysis Input
+# Sidebar für die Eingabe zur Aktienanalyse
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 
 if st.sidebar.button("Analyze Stock"):
-    # Analyze stock
+    # Analyse der Aktie
     if ticker:
         result = analyze_stock(ticker)
         
         st.subheader(f'Stock Analysis Results for {ticker}')
         
-        # Sort and group ratios by type
+        # Sortiere und gruppiere Verhältnisse nach Typ
         grouped_ratios = {
             'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
             'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
@@ -185,25 +198,36 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
-        # Display current and historical closing prices
+        # Anzeige aktueller und historischer Schlusskurse
         st.subheader(f'Current and Historical Closing Prices for {ticker}')
         st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
         st.line_chart(result['Historical Prices']['Close'])
 
-        # Calculate news sentiment
+        # Technische Indikatoren anzeigen
+        st.subheader('Technical Indicators')
+        for indicator_name, indicator_data in result['Technical Indicators'].items():
+            st.write(f"**{indicator_name}**")
+            st.write(indicator_data)
+
+            # Grafische Darstellung einiger technischer Indikatoren
+            if 'SMA' in indicator_name or 'EMA' in indicator_name or 'RSI' in indicator_name or 'MACD' in indicator_name:
+                fig = px.line(result['Historical Prices'], x=result['Historical Prices'].index, y=indicator_data, title=f'{indicator_name} for {ticker}')
+                st.plotly_chart(fig)
+
+        # Nachrichtensentiment berechnen
         try:
             news_data = get_news_data(ticker)
-            # Analyze sentiment
+            # Sentiment analysieren
             sentiments = analyze_sentiment(news_data)
-            # Calculate average sentiment
+            # Durchschnittliches Sentiment berechnen
             avg_sentiment = np.mean(sentiments)
 
             st.subheader('News Sentiment Analysis')
             st.write(f"Average Sentiment for {ticker}: {avg_sentiment:.2f}")
 
-            # Display news articles
+            # Anzeige von Nachrichtenartikeln
             st.subheader('Latest News Articles')
-            for article in news_data[:5]:  # Displaying only the first 5 articles
+            for article in news_data[:5]:  # Zeige nur die ersten 5 Artikel an
                 st.write(f"**Published At**: {article[0]}")
                 st.write(f"**Title**: {article[1]}")
                 st.write(f"**Summary**: {article[2]}")
@@ -212,7 +236,7 @@ if st.sidebar.button("Analyze Stock"):
         except Exception as e:
             st.error(f"Error fetching news data: {str(e)}")
 
-# Sidebar for Portfolio Optimization Input
+# Sidebar für die Eingabe zur Portfolio-Optimierung
 st.sidebar.header('Portfolio Optimization Input')
 tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
 tickers = [ticker.strip() for ticker in tickers_input.split(',')]
@@ -236,10 +260,11 @@ if st.sidebar.button("Optimize Portfolio"):
     fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
     st.plotly_chart(fig)
 
-    # Display current and historical closing prices for optimized portfolio
+    # Anzeige aktueller und historischer Schlusskurse für das optimierte Portfolio
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
