@@ -90,25 +90,25 @@ def analyze_stock(ticker):
 
 # Function for portfolio optimization
 def optimize_portfolio(tickers, min_weight, max_weight):
-    # Datumsbereich festlegen
+    # Define date range
     end_date = datetime.today()
     start_date = end_date - timedelta(days=5*365)
 
-    # Datenrahmen für bereinigte Schlusskurse erstellen
+    # Create dataframe for adjusted closing prices
     adj_close_df = pd.DataFrame()
 
     for ticker in tickers:
         data = yf.download(ticker, start=start_date, end=end_date)
         adj_close_df[ticker] = data['Adj Close']
 
-    # Log-Renditen berechnen
+    # Calculate log returns
     log_returns = np.log(adj_close_df / adj_close_df.shift(1))
     log_returns = log_returns.dropna()
 
-    # Kovarianzmatrix berechnen
+    # Calculate covariance matrix
     cov_matrix = log_returns.cov() * 252
 
-    # Funktionen für Standardabweichung, erwartete Rendite und Sharpe-Ratio
+    # Functions for standard deviation, expected return, and Sharpe ratio
     def standard_deviation(weights, cov_matrix):
         variance = weights.T @ cov_matrix @ weights
         return np.sqrt(variance)
@@ -119,12 +119,12 @@ def optimize_portfolio(tickers, min_weight, max_weight):
     def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
         return (expected_return(weights, log_returns) - risk_free_rate) / standard_deviation(weights, cov_matrix)
 
-    # FRED API verwenden, um den aktuellen 10-Jahres-Treasury-Rate zu erhalten
+    # Use FRED API to get current 10-year Treasury rate
     fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
 
-    # Optimierung der Sharpe-Ratio mit einer Iterationsmethode
+    # Optimize Sharpe ratio using an iterative approach
     num_assets = len(tickers)
     num_portfolios = 10000
     results = np.zeros((3, num_portfolios))
@@ -135,7 +135,7 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 
     constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
 
-    # Setze Grenzen für Gewichtungen
+    # Set boundaries for weights
     bounds = [(min_weight / 100, max_weight / 100)] * num_assets
 
     for i in range(num_portfolios):
@@ -155,7 +155,7 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
 
-# Sidebar für Stock Analysis Input
+# Sidebar for Stock Analysis Input
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 
@@ -166,46 +166,25 @@ if st.sidebar.button("Analyze Stock"):
         
         st.subheader(f'Stock Analysis Results for {ticker}')
         
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write(f"**P/E Ratio**: {result['P/E Ratio']}")
-            st.write(f"**Forward P/E**: {result['Forward P/E']}")
-            st.write(f"**Price to Sales Ratio**: {result['Price to Sales Ratio']}")
-            st.write(f"**P/B Ratio**: {result['P/B Ratio']}")
-            st.write(f"**Dividend Yield**: {result['Dividend Yield']}")
-            st.write(f"**Trailing Eps**: {result['Trailing Eps']}")
-            st.write(f"**Target Price**: {result['Target Price']}")
-            st.write(f"**Sector**: {result['Sector']}")
-            st.write(f"**Industry**: {result['Industry']}")
-            st.write(f"**Full Time Employees**: {result['Full Time Employees']}")
-            st.write(f"**City**: {result['City']}")
-            st.write(f"**State**: {result['State']}")
-            st.write(f"**Country**: {result['Country']}")
-            st.write(f"**Website**: {result['Website']}")
+        # Sort and group ratios by type
+        grouped_ratios = {
+            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
+            'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
+            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
+            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
+            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
+            'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
+            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
+            'Market Metrics': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA']
+        }
         
-        with col2:
-            st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']}")
-            st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']}")
-            st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']}")
-            st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']}")
-            st.write(f"**Profit Margins**: {result['Profit Margins']}")
-            st.write(f"**Gross Margins**: {result['Gross Margins']}")
-            st.write(f"**EBITDA Margins**: {result['EBITDA Margins']}")
-            st.write(f"**Operating Margins**: {result['Operating Margins']}")
-            st.write(f"**Return on Assets (ROA)**: {result['Return on Assets (ROA)']}")
-            st.write(f"**Return on Equity (ROE)**: {result['Return on Equity (ROE)']}")
-            st.write(f"**Revenue Growth**: {result['Revenue Growth']}")
-            st.write(f"**Payout Ratio**: {result['Payout Ratio']}")
-            st.write(f"**Total Cash (Million $)**: {result['Total Cash (Million $)']}")
-            st.write(f"**Total Debt (Million $)**: {result['Total Debt (Million $)']}")
-            st.write(f"**Total Revenue (Million $)**: {result['Total Revenue (Million $)']}")
-            st.write(f"**Gross Profits**: {result['Gross Profits']}")
-            st.write(f"**Total Revenue per Share**: {result['Total Revenue per Share']}")
-            st.write(f"**Debt to Equity Ratio**: {result['Debt to Equity Ratio']}")
-            st.write(f"**Current Ratio**: {result['Current Ratio']}")
-            st.write(f"**Operating Cashflow (Million $)**: {result['Operating Cashflow (Million $)']}")
-            st.write(f"**Levered Free Cashflow (Million $)**: {result['Levered Free Cashflow (Million $)']}")
-
+        for group_name, ratios in grouped_ratios.items():
+            st.subheader(group_name)
+            for ratio in ratios:
+                if result[ratio] is not None:
+                    st.write(f"**{ratio}**: {result[ratio]}")
+            st.write("---")
+        
         # Display current and historical closing prices
         st.subheader(f'Current and Historical Closing Prices for {ticker}')
         st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
@@ -233,7 +212,7 @@ if st.sidebar.button("Analyze Stock"):
         except Exception as e:
             st.error(f"Error fetching news data: {str(e)}")
 
-# Sidebar für Portfolio Optimization Input
+# Sidebar for Portfolio Optimization Input
 st.sidebar.header('Portfolio Optimization Input')
 tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
 tickers = [ticker.strip() for ticker in tickers_input.split(',')]
