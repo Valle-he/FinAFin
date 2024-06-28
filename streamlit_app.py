@@ -45,7 +45,44 @@ def fetch_stock_data(ticker):
 def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
+    hist = fetch_stock_data(ticker)
+    
+    # Calculate volatility
+    hist['Log Return'] = np.log(hist['Close'] / hist['Close'].shift(1))
+    volatility = hist['Log Return'].std() * np.sqrt(252)
+    
+    # Calculate Max Drawdown
+    hist['Cumulative Return'] = (1 + hist['Log Return']).cumprod()
+    hist['Cumulative Max'] = hist['Cumulative Return'].cummax()
+    hist['Drawdown'] = hist['Cumulative Return'] / hist['Cumulative Max'] - 1
+    max_drawdown = hist['Drawdown'].min()
+    
+    # Calculate Beta (using S&P 500 as a benchmark)
+    sp500 = yf.Ticker('^GSPC').history(period='5y')
+    sp500['Log Return'] = np.log(sp500['Close'] / sp500['Close'].shift(1))
+    covariance = np.cov(hist['Log Return'].dropna(), sp500['Log Return'].dropna())[0][1]
+    beta = covariance / sp500['Log Return'].var()
+    
+    # Calculate correlation with market (S&P 500)
+    correlation = hist['Log Return'].corr(sp500['Log Return'])
+    
+    # Function to calculate Cost of Equity
+    def calculate_cost_of_equity(risk_free_rate, beta, average_market_return):
+        cost_of_equity = risk_free_rate + beta * (average_market_return - risk_free_rate)
+        return cost_of_equity
 
+    # Use FRED API to get current 10-year Treasury rate
+    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+    risk_free_rate = ten_year_treasury_rate.iloc[-1]
+
+    # Calculate average market return (you may need to adjust this calculation based on your data)
+    # Example: Using S&P 500 index return as average market return
+    average_market_return = sp500['Log Return'].mean() * 252
+
+    # Calculate Cost of Equity
+    cost_of_equity = calculate_cost_of_equity(risk_free_rate, beta, average_market_return)
+    
     analysis = {
         'Ticker': ticker,
         'P/E Ratio': info.get('trailingPE'),
@@ -83,7 +120,12 @@ def analyze_stock(ticker):
         'Current Ratio': info.get('currentRatio'),
         'Operating Cashflow (Million $)': info.get('operatingCashflow') / 1e6 if info.get('operatingCashflow') else None,
         'Levered Free Cashflow (Million $)': info.get('leveredFreeCashflow') / 1e6 if info.get('leveredFreeCashflow') else None,
-        'Historical Prices': fetch_stock_data(ticker)
+        'Volatility': volatility,
+        'Max Drawdown': max_drawdown,
+        'Beta': beta,
+        'Market Correlation': correlation,
+        'Cost of Equity': cost_of_equity,
+        'Historical Prices': hist
     }
     
     return analysis
@@ -185,6 +227,15 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
+        # Risk Management section
+        st.subheader('Risk Management Metrics')
+        st.write(f"**Volatility**: {result['Volatility']:.4f}")
+        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
+        st.write(f"**Beta**: {result['Beta']:.4f}")
+        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+        st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
+        st.write("---")
+        
         # Display current and historical closing prices
         st.subheader(f'Current and Historical Closing Prices for {ticker}')
         st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
@@ -240,3 +291,4 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
