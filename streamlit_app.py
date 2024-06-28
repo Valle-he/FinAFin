@@ -217,7 +217,7 @@ if st.sidebar.button("Analyze Stock"):
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
             'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
             'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
-            'Market Metrics': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA']
+            'Market Metrics': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA', 'Cost of Equity']
         }
         
         for group_name, ratios in grouped_ratios.items():
@@ -291,4 +291,5 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
