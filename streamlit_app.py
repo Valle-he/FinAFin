@@ -41,6 +41,11 @@ def fetch_stock_data(ticker):
     hist = stock.history(period='5y')
     return hist
 
+# Function to calculate Cost of Equity
+def calculate_cost_of_equity(risk_free_rate, beta, average_market_return):
+    cost_of_equity = risk_free_rate + beta * (average_market_return - risk_free_rate)
+    return cost_of_equity
+
 # Function to analyze stock based on ticker symbol
 def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
@@ -66,11 +71,6 @@ def analyze_stock(ticker):
     # Calculate correlation with market (S&P 500)
     correlation = hist['Log Return'].corr(sp500['Log Return'])
     
-    # Function to calculate Cost of Equity
-    def calculate_cost_of_equity(risk_free_rate, beta, average_market_return):
-        cost_of_equity = risk_free_rate + beta * (average_market_return - risk_free_rate)
-        return cost_of_equity
-
     # Use FRED API to get current 10-year Treasury rate
     fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
@@ -210,6 +210,13 @@ def main():
             st.subheader('Stock Analysis Result')
             st.write(f"Analysis for {analysis_result['Ticker']}")
 
+            st.subheader('Market Metrics')
+            st.write(pd.DataFrame({
+                'Beta': analysis_result['Beta'],
+                'Market Correlation': analysis_result['Market Correlation'],
+                'Cost of Equity': analysis_result['Cost of Equity']
+            }, index=[0]))
+
             st.subheader('Key Metrics')
             st.write(pd.DataFrame(analysis_result, index=[0]).transpose())
 
@@ -221,12 +228,6 @@ def main():
 
             st.subheader('Max Drawdown Analysis')
             st.write(f"Maximum Drawdown: {analysis_result['Max Drawdown']:.2%}")
-
-            st.subheader('Market Correlation')
-            st.write(f"Correlation with S&P 500: {analysis_result['Market Correlation']:.2f}")
-
-            st.subheader('Cost of Equity')
-            st.write(f"Cost of Equity: {analysis_result['Cost of Equity']:.2%}")
 
     elif analysis_type == 'Portfolio Optimization':
         st.sidebar.subheader('Portfolio Optimization Inputs')
@@ -248,6 +249,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
