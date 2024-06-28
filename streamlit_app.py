@@ -6,9 +6,7 @@ import requests
 from textblob import TextBlob
 from datetime import datetime, timedelta
 from fredapi import Fred
-import plotly.express as px
-from scipy.optimize import minimize
-import ta  # Importiert die Bibliothek für technische Indikatoren
+import ta  # Importieren der Bibliothek für technische Indikatoren
 
 # Alpha Vantage API Key für News Sentiment
 alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
@@ -54,8 +52,6 @@ def analyze_stock(ticker):
         'SMA (Simple Moving Average)': ta.sma_indicator(hist['Close'], window=20),
         'EMA (Exponential Moving Average)': ta.ema_indicator(hist['Close'], window=20),
         'RSI (Relative Strength Index)': ta.rsi(hist['Close'], window=14),
-        'MACD (Moving Average Convergence Divergence)': ta.macd(hist['Close'], window_fast=12, window_slow=26, window_sign=9)['MACD'],
-        'Bollinger Bands': ta.bollinger_hband_indicator(hist['Close'], window=20, std=2),
     }
 
     analysis = {
@@ -206,13 +202,10 @@ if st.sidebar.button("Analyze Stock"):
         # Technische Indikatoren anzeigen
         st.subheader('Technical Indicators')
         for indicator_name, indicator_data in result['Technical Indicators'].items():
-            st.write(f"**{indicator_name}**")
-            st.write(indicator_data)
-
-            # Grafische Darstellung einiger technischer Indikatoren
-            if 'SMA' in indicator_name or 'EMA' in indicator_name or 'RSI' in indicator_name or 'MACD' in indicator_name:
-                fig = px.line(result['Historical Prices'], x=result['Historical Prices'].index, y=indicator_data, title=f'{indicator_name} for {ticker}')
-                st.plotly_chart(fig)
+            if 'SMA' in indicator_name or 'EMA' in indicator_name or 'RSI' in indicator_name:
+                st.write(f"**{indicator_name}**")
+                st.write(indicator_data)
+                st.write("---")
 
         # Nachrichtensentiment berechnen
         try:
@@ -264,8 +257,3 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
-
-
-
-
-
