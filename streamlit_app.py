@@ -217,7 +217,6 @@ if st.sidebar.button("Analyze Stock"):
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
             'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
             'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
-            'Market Metrics': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA', 'Cost of Equity']
         }
         
         for group_name, ratios in grouped_ratios.items():
@@ -233,6 +232,14 @@ if st.sidebar.button("Analyze Stock"):
         st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
         st.write(f"**Beta**: {result['Beta']:.4f}")
         st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+        st.write("---")
+        
+        # Market Metrics section
+        st.subheader('Market Metrics')
+        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
+        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
+        st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
+        st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
         st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
         st.write("---")
         
@@ -291,5 +298,6 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
