@@ -226,6 +226,18 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
+        # Fair Value Metrics section
+        st.subheader('Fair Value Metrics')
+        st.write("Enter the required inputs below:")
+        growth_rate = st.number_input('Enter the growth rate (%)', min_value=0.0, max_value=100.0, value=10.0)
+        st.write("---")
+        
+        # Expected Return Metrics section
+        st.subheader('Return Metrics')
+        st.write("Enter the required inputs below:")
+        extrapolation_period = st.number_input('Enter the extrapolation period (years)', min_value=1, max_value=10, value=5)
+        st.write("---")
+        
         # Market Metrics section
         st.subheader('Market Metrics')
         st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
@@ -298,6 +310,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
