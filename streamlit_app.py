@@ -336,7 +336,7 @@ ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 
 if st.sidebar.button("Analyze Stock"):
     # Analyze stock
-    if ticker and growth_rate:
+    if ticker:
         result = analyze_stock(ticker)
         
         st.subheader(f'Stock Analysis Results for {ticker}')
@@ -378,24 +378,16 @@ if st.sidebar.button("Analyze Stock"):
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
-        growth_rate = st.text_input('Enter Growth Rate (as decimal):', '0.10')
-        if st.button('Calculate Valuation Metrics'):
-            if ticker:
-                try:
-                    peter_lynch_score, peter_lynch_expected_return = calculate_peter_lynch_score(ticker, growth_rate)
-                    graham_valuation, graham_expected_return = calculate_graham_valuation(ticker, growth_rate)
-                    formula_valuation, formula_expected_return = calculate_formula_valuation(ticker, growth_rate)
+        if 'Peter Lynch Score' in result and result['Peter Lynch Score'] is not None:
+            st.write(f"**Peter Lynch Score**: {result['Peter Lynch Score']:.2f}")
+        else:
+            st.write("**Peter Lynch Score**: N/A")
 
-                    st.subheader('Valuation Metrics')
-                    if peter_lynch_score is not None:
-                      st.write(f'Peter Lynch Score: {peter_lynch_score:.2f}, Expected Return: {peter_lynch_expected_return:.2%}')
-                    if graham_valuation is not None:
-                      st.write(f'Graham Valuation: {graham_valuation:.2f}, Expected Return: {graham_expected_return:.2%}')
-                    if formula_valuation is not None:
-                     st.write(f'Formula Valuation: {formula_valuation:.2f}, Expected Return: {formula_expected_return:.2%}')
-
-                except ValueError:
-                    st.error('Please enter a valid growth rate (as decimal).')
+        st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
+        if result['Formula Valuation'] is not None:
+            st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
+        else:
+            st.write("**Formula Valuation**: N/A")
 
         if result['Expected Return (Fundamental)'] is not None:
             st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
