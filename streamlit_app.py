@@ -336,7 +336,7 @@ ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 
 if st.sidebar.button("Analyze Stock"):
     # Analyze stock
-    if ticker:
+    if ticker and growth_rate:
         result = analyze_stock(ticker)
         
         st.subheader(f'Stock Analysis Results for {ticker}')
