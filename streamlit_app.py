@@ -105,7 +105,7 @@ def calculate_expected_return(ticker, growth_rate):
     current_stock_price = stock.history(period='1d')['Close'].iloc[-1]
     
     # Expected Return berechnen
-    expected_return = ((future_stock_price / current_stock_price) ** (1 / 5) - 1) * 100
+    expected_return = ((future_stock_price / current_stock_price) ** (1 / 5) - 1) 
     
     return expected_return
 
@@ -121,7 +121,7 @@ def calculate_expected_return_historical(ticker):
     log_returns = np.log(data['Adj Close'] / data['Adj Close'].shift(1))
     
     # Historischen Expected Return berechnen
-    historical_return = log_returns.mean() * 252 * 100  # in Prozent umrechnen
+    historical_return = log_returns.mean() * 252 # in Prozent umrechnen
     
     return historical_return
 
