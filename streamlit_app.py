@@ -378,6 +378,7 @@ if st.sidebar.button("Analyze Stock"):
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
+        growth_rate = st.number_input('Enter Growth Rate (as decimal):', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
         if 'Peter Lynch Score' in result and result['Peter Lynch Score'] is not None:
             st.write(f"**Peter Lynch Score**: {result['Peter Lynch Score']:.2f}")
         else:
