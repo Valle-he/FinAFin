@@ -226,6 +226,25 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
+        # Fair Value Metrics section
+        st.subheader('Fair Value Metrics')
+        st.write("Enter the required inputs below:")
+        growth_rate = st.number_input('Enter the growth rate (%)', min_value=0.0, max_value=100.0, value=10.0)
+        if st.button('Calculate Fair Value'):
+            # Calculate fair value based on growth rate
+            fair_value = result['Trailing Eps'] * (1 + growth_rate / 100) ** extrapolation_period
+            st.write(f"**Fair Value**: {fair_value:.2f}")
+        st.write("---")
+        
+        # Return Metrics section
+        st.subheader('Return Metrics')
+        st.write("Enter the required inputs below:")
+        extrapolation_period = st.number_input('Enter the extrapolation period (years)', min_value=1, max_value=10, value=5)
+        if st.button('Calculate Return Metrics'):
+            # Perform return metric calculations
+            st.write("Perform return metric calculations here")
+        st.write("---")
+        
         # Market Metrics section
         st.subheader('Market Metrics')
         st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
@@ -270,48 +289,32 @@ if st.sidebar.button("Analyze Stock"):
         except Exception as e:
             st.error(f"Error fetching news data: {str(e)}")
 
-# Section for Fair Value and Return Metrics
-st.subheader('Fair Value Metrics')
-growth_rate = st.number_input('Enter the expected annual growth rate (%)', min_value=0.0, value=5.0, step=0.1)
-extrapolation_years = st.number_input('Enter the extrapolation period (years)', min_value=1, value=5, step=1)
+# Sidebar for Portfolio Optimization Input
+st.sidebar.header('Portfolio Optimization Input')
+tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
+tickers = [ticker.strip() for ticker in tickers_input.split(',')]
 
-if st.button("Calculate Fair Value and Return Metrics"):
-    if ticker:
-        # Perform calculations based on growth_rate and extrapolation_years
-        fair_value = 0  # Placeholder for fair value calculation
-        peter_lynch_score = 0  # Placeholder for Peter Lynch score calculation
+min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100, value=5)
+max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
 
-        # Display results
-        st.subheader('Fair Value Metrics')
-        st.write(f"**Fair Value**: {fair_value:.2f}")
-        st.write(f"**Peter Lynch Score**: {peter_lynch_score:.2f}")
+if st.sidebar.button("Optimize Portfolio"):
+    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
+    
+    st.subheader("Optimal Portfolio Metrics:")
+    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
+    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
+    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
 
-# Section for Portfolio Optimization
-st.subheader('Return Metrics')
-portfolio_growth_rate = st.number_input('Enter the portfolio expected annual growth rate (%)', min_value=0.0, value=8.0, step=0.1)
-extrapolation_years_portfolio = st.number_input('Enter the extrapolation period for portfolio (years)', min_value=1, value=10, step=1)
+    st.subheader("Optimal Weights:")
+    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
+    st.write(optimal_weights_df)
 
-if st.button("Calculate Portfolio Return Metrics"):
-    if tickers_input:
-        tickers = [ticker.strip() for ticker in tickers_input.split(',')]
-        # Perform portfolio optimization and calculations
-        optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, 5, 30)
-        
-        # Display results
-        st.subheader("Optimal Portfolio Metrics:")
-        st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
-        st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
-        st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
+    # Plot Portfolio Allocation
+    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
+    st.plotly_chart(fig)
 
-        st.subheader("Optimal Weights:")
-        optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
-        st.write(optimal_weights_df)
+    # Display current and historical closing prices for optimized portfolio
+    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
+    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
+    st.line_chart(optimized_portfolio_prices)
 
-        # Plot Portfolio Allocation
-        fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
-        st.plotly_chart(fig)
-
-        # Display current and historical closing prices for optimized portfolio
-        st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
-        optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-        st.line_chart(optimized_portfolio_prices)
