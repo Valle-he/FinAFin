@@ -173,7 +173,14 @@ def analyze_stock(ticker):
     # Calculate Beta (using S&P 500 as a benchmark)
     sp500 = yf.Ticker('^GSPC').history(period='5y')
     sp500['Log Return'] = np.log(sp500['Close'] / sp500['Close'].shift(1))
-    covariance = np.cov(hist['Log Return'].dropna(), sp500['Log Return'].dropna())[0][1]
+    # Example alignment (adjust according to your data)
+    common_index = hist['Log Return'].index.intersection(sp500['Log Return'].index)
+    hist_aligned = hist.loc[common_index, 'Log Return'].dropna()
+    sp500_aligned = sp500.loc[common_index, 'Log Return'].dropna()
+
+# Calculate covariance
+    covariance = np.cov(hist_aligned, sp500_aligned)[0, 1]
+
     beta = covariance / sp500['Log Return'].var()
     
     # Calculate correlation with market (S&P 500)
