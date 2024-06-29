@@ -343,7 +343,7 @@ if st.sidebar.button("Analyze Stock"):
         
         # Sort and group ratios by type
         grouped_ratios = {
-            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
+            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio'],
             'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
             'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
             'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
