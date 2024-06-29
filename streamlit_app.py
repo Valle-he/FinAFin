@@ -384,7 +384,11 @@ if st.sidebar.button("Analyze Stock"):
             st.write("**Peter Lynch Score**: N/A")
 
         st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
-        st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
+        if result['Formula Valuation'] is not None:
+            st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
+        else:
+            st.write("**Formula Valuation**: N/A")
+
         st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
         st.write(f"**Historical Return (5 Years Average)**: {result['Historical Expected Return']:.4f}")
         st.write("---")
