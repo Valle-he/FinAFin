@@ -375,7 +375,7 @@ if st.sidebar.button("Analyze Stock"):
         st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
         st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
         st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
-        st.write(f"**Historical Expected Return**: {result['Historical Expected Return']:.4f}")
+        st.write(f"**Historical Return (5 Years Average)**: {result['Historical Expected Return']:.4f}")
         st.write("---")
         
         # Display current and historical closing prices
