@@ -10,7 +10,7 @@ import plotly.express as px
 from scipy.optimize import minimize
 
 # Alpha Vantage API Key for News Sentiment
-alpha_vantage_api_key = 'YOUR_ALPHA_VANTAGE_API_KEY_HERE'
+alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
 
 # Function to fetch news data using Alpha Vantage News API
 def get_news_data(ticker):
@@ -71,7 +71,7 @@ def calculate_graham_valuation(ticker, growth_rate):
         return None
     
     # Fetch 10-year Treasury rate
-    fred = Fred(api_key='YOUR_FRED_API_KEY_HERE')
+    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
     
