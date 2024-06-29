@@ -10,7 +10,7 @@ import plotly.express as px
 from scipy.optimize import minimize
 
 # Alpha Vantage API Key for News Sentiment
-alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
+alpha_vantage_api_key = 'YOUR_API_KEY_HERE'  # Replace with your API key
 
 # Function to fetch news data using Alpha Vantage News API
 def get_news_data(ticker):
@@ -42,7 +42,7 @@ def fetch_stock_data(ticker):
     return hist
 
 # Function to analyze stock based on ticker symbol
-def analyze_stock(ticker):
+def analyze_stock(ticker, growth_rate):
     stock = yf.Ticker(ticker)
     info = stock.info
     hist = fetch_stock_data(ticker)
@@ -72,7 +72,7 @@ def analyze_stock(ticker):
         return cost_of_equity
 
     # Use FRED API to get current 10-year Treasury rate
-    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+    fred = Fred(api_key='YOUR_API_KEY_HERE')  # Replace with your FRED API key
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
 
@@ -83,6 +83,69 @@ def analyze_stock(ticker):
     # Calculate Cost of Equity
     cost_of_equity = calculate_cost_of_equity(risk_free_rate, beta, average_market_return)
     
+    # Fair Value Metrics Calculation
+    def calculate_graham_valuation(ticker, growth_rate):
+        # EPS abrufen
+        eps = info.get('trailingEps', None)
+        
+        if eps is None:
+            return None  # Wenn EPS nicht verfügbar, kein Fair Value berechnen
+        
+        # Risk-Free Rate über FRED API abrufen
+        fred = Fred(api_key='YOUR_API_KEY_HERE')  # Replace with your FRED API key
+        ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+        risk_free_rate = ten_year_treasury_rate.iloc[-1]
+        
+        # Fair Value nach Graham Formel berechnen
+        graham_valuation = (eps * (8.5 + (2 * growth_rate) * 100) * 4.4) / (risk_free_rate * 100)
+        
+        return graham_valuation
+    
+    def calculate_formula_valuation(ticker, growth_rate):
+        # Forward P/E Ratio abrufen
+        forward_pe_ratio = info.get('forwardPE', None)
+        
+        if forward_pe_ratio is None:
+            return None  # Wenn Forward P/E Ratio nicht verfügbar, kein Fair Value berechnen
+        
+        # EPS abrufen
+        eps = info.get('trailingEps', None)
+        
+        if eps is None:
+            return None  # Wenn EPS nicht verfügbar, kein Fair Value berechnen
+        
+        # Durchschnittlicher Markt Return
+        sp500 = yf.Ticker('^GSPC').history(period='5y')
+        average_market_return = sp500['Close'].pct_change().mean() * 252
+        
+        # Fair Value nach Formel berechnen
+        formula_valuation = (forward_pe_ratio * eps * ((1 + growth_rate) ** 5)) / ((1 + average_market_return) ** 5)
+        
+        return formula_valuation
+    
+    def calculate_peter_lynch_score(ticker, growth_rate):
+        # Dividendenrendite abrufen
+        dividend_yield = info.get('dividendYield', None)
+        
+        if dividend_yield is None or dividend_yield <= 0:
+            return None  # Wenn Dividendenrendite nicht verfügbar oder <= 0, kein Score berechnen
+        
+        # P/E Ratio abrufen
+        pe_ratio = info.get('trailingPE', None)
+        
+        if pe_ratio is None:
+            return None  # Wenn P/E Ratio nicht verfügbar, kein Score berechnen
+        
+        # Score gemäß der Formel berechnen
+        peter_lynch_score = (growth_rate * 100) / (pe_ratio * dividend_yield * 100)
+        
+        return peter_lynch_score
+    
+    graham_valuation = calculate_graham_valuation(ticker, growth_rate)
+    formula_valuation = calculate_formula_valuation(ticker, growth_rate)
+    peter_lynch_score = calculate_peter_lynch_score(ticker, growth_rate)
+    
+    # Stock Analysis Results
     analysis = {
         'Ticker': ticker,
         'P/E Ratio': info.get('trailingPE'),
@@ -107,197 +170,107 @@ def analyze_stock(ticker):
         'Gross Margins': info.get('grossMargins'),
         'EBITDA Margins': info.get('ebitdaMargins'),
         'Operating Margins': info.get('operatingMargins'),
-        'Return on Assets (ROA)': info.get('returnOnAssets'),
-        'Return on Equity (ROE)': info.get('returnOnEquity'),
-        'Revenue Growth': info.get('revenueGrowth'),
-        'Payout Ratio': info.get('payoutRatio'),
-        'Total Cash (Million $)': info.get('totalCash') / 1e6 if info.get('totalCash') else None,
-        'Total Debt (Million $)': info.get('totalDebt') / 1e6 if info.get('totalDebt') else None,
-        'Total Revenue (Million $)': info.get('totalRevenue') / 1e6 if info.get('totalRevenue') else None,
-        'Gross Profits': info.get('grossProfits'),
-        'Total Revenue per Share': info.get('totalRevenuePerShare'),
-        'Debt to Equity Ratio': info.get('debtToEquity'),
-        'Current Ratio': info.get('currentRatio'),
-        'Operating Cashflow (Million $)': info.get('operatingCashflow') / 1e6 if info.get('operatingCashflow') else None,
-        'Levered Free Cashflow (Million $)': info.get('leveredFreeCashflow') / 1e6 if info.get('leveredFreeCashflow') else None,
-        'Volatility': volatility,
-        'Max Drawdown': max_drawdown,
+        'Levered Free Cash Flow': info.get('leveredFreeCashFlow'),
         'Beta': beta,
         'Market Correlation': correlation,
+        'Volatility': volatility,
+        'Max Drawdown': max_drawdown,
         'Cost of Equity': cost_of_equity,
-        'Historical Prices': hist
+        'Graham Valuation': graham_valuation,
+        'Formula Valuation': formula_valuation,
+        'Peter Lynch Score': peter_lynch_score
     }
     
-    return analysis
-
-# Function for portfolio optimization
-def optimize_portfolio(tickers, min_weight, max_weight):
-    # Define date range
-    end_date = datetime.today()
-    start_date = end_date - timedelta(days=5*365)
-
-    # Create dataframe for adjusted closing prices
-    adj_close_df = pd.DataFrame()
-
-    for ticker in tickers:
-        data = yf.download(ticker, start=start_date, end=end_date)
-        adj_close_df[ticker] = data['Adj Close']
-
-    # Calculate log returns
-    log_returns = np.log(adj_close_df / adj_close_df.shift(1))
-    log_returns = log_returns.dropna()
-
-    # Calculate covariance matrix
-    cov_matrix = log_returns.cov() * 252
-
-    # Functions for standard deviation, expected return, and Sharpe ratio
-    def standard_deviation(weights, cov_matrix):
-        variance = weights.T @ cov_matrix @ weights
-        return np.sqrt(variance)
-
-    def expected_return(weights, log_returns):
-        return np.sum(log_returns.mean() * weights) * 252
-
-    def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
-        return (expected_return(weights, log_returns) - risk_free_rate) / standard_deviation(weights, cov_matrix)
-
-    # Use FRED API to get current 10-year Treasury rate
-    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
-    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
-    risk_free_rate = ten_year_treasury_rate.iloc[-1]
-
-    # Optimize Sharpe ratio using an iterative approach
-    num_assets = len(tickers)
-    num_portfolios = 10000
-    results = np.zeros((3, num_portfolios))
-    weight_array = np.zeros((num_portfolios, num_assets))
-
-    def objective(weights):
-        return -sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
-
-    constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
-
-    # Set boundaries for weights
-    bounds = [(min_weight / 100, max_weight / 100)] * num_assets
-
-    for i in range(num_portfolios):
-        weights = np.random.random(num_assets)
-        weights /= np.sum(weights)
-        weight_array[i, :] = weights
-
-    optimized = minimize(objective, num_assets * [1. / num_assets,], method='SLSQP', bounds=bounds, constraints=constraints)
-
-    optimal_weights = optimized['x']
-    optimal_portfolio_return = expected_return(optimal_weights, log_returns)
-    optimal_portfolio_volatility = standard_deviation(optimal_weights, cov_matrix)
-    optimal_sharpe_ratio = sharpe_ratio(optimal_weights, log_returns, cov_matrix, risk_free_rate)
-
-    return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
+    return analysis, hist
 
 # Streamlit App
-st.title('Stock and Portfolio Analysis')
+st.title('Stock Analysis Dashboard')
 
-# Sidebar for Stock Analysis Input
-st.sidebar.header('Stock Analysis Input')
-ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
+# Sidebar
+st.sidebar.title('User Input')
+ticker = st.sidebar.text_input('Enter Ticker Symbol', 'AAPL')
+growth_rate = st.sidebar.number_input('Enter Growth Rate (%)', value=5.0)
 
-if st.sidebar.button("Analyze Stock"):
-    # Analyze stock
-    if ticker:
-        result = analyze_stock(ticker)
+# Analyze Stock
+if st.sidebar.button('Analyze Stock'):
+    try:
+        stock_analysis, stock_hist = analyze_stock(ticker, growth_rate / 100)
+        st.subheader(f'Stock Analysis for {ticker}')
         
-        st.subheader(f'Stock Analysis Results for {ticker}')
+        # Display Fair Value Metrics
+        st.subheader('Fair Value Metrics')
+        st.write(f"Graham Valuation: {stock_analysis['Graham Valuation']}")
+        st.write(f"Formula Valuation: {stock_analysis['Formula Valuation']}")
+        st.write(f"Peter Lynch Score: {stock_analysis['Peter Lynch Score']}")
         
-        # Sort and group ratios by type
-        grouped_ratios = {
-            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
-            'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
-            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
-            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
-            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
-            'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
-            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
-        }
+        # Display Return Metrics
+        st.subheader('Return Metrics (Extrapolated for 5 years)')
+        st.write(f"Expected Return based on Cost of Equity: {stock_analysis['Cost of Equity'] * 100:.2f}%")
+        st.write(f"Expected Return based on Formula Valuation: {((stock_analysis['Formula Valuation'] / stock_hist['Close'].iloc[-1]) ** (1/5) - 1) * 100:.2f}%")
         
-        for group_name, ratios in grouped_ratios.items():
-            st.subheader(group_name)
-            for ratio in ratios:
-                if result[ratio] is not None:
-                    st.write(f"**{ratio}**: {result[ratio]}")
-            st.write("---")
-        
-        # Risk Management section
-        st.subheader('Risk Management Metrics')
-        st.write(f"**Volatility**: {result['Volatility']:.4f}")
-        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
-        st.write(f"**Beta**: {result['Beta']:.4f}")
-        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
-        st.write("---")
-        
-        # Market Metrics section
+        # Display Market Metrics
         st.subheader('Market Metrics')
-        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
-        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
-        st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
-        st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
-        st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
-        st.write("---")
+        st.write(f"Market Cap (Billion $): {stock_analysis['Market Cap (Billion $)']}")
+        st.write(f"Profit Margins: {stock_analysis['Profit Margins']}")
+        st.write(f"Beta: {stock_analysis['Beta']}")
+        st.write(f"Volatility: {stock_analysis['Volatility']:.2f}")
         
-        # Display current and historical closing prices
-        st.subheader(f'Current and Historical Closing Prices for {ticker}')
-        st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
-        st.line_chart(result['Historical Prices']['Close'])
+        # Display Risk Management Metrics
+        st.subheader('Risk Management Metrics')
+        st.write(f"Max Drawdown: {stock_analysis['Max Drawdown'] * 100:.2f}%")
+        st.write(f"Market Correlation: {stock_analysis['Market Correlation']:.2f}")
+        st.write(f"Cost of Equity: {stock_analysis['Cost of Equity']:.4f}")
+        
+        # Display Current and Historical Closing Prices
+        st.subheader('Current and Historical Closing Prices')
+        st.line_chart(stock_hist['Close'])
+        
+        # Display News Sentiment Analysis
+        st.subheader('News Sentiment Analysis')
+        news_data = get_news_data(ticker)
+        sentiments = analyze_sentiment(news_data)
+        sentiment_df = pd.DataFrame({'Sentiment': sentiments}, index=[entry[0] for entry in news_data])
+        st.line_chart(sentiment_df)
+        
+    except Exception as e:
+        st.write(f"Error occurred: {e}")
 
-        # Calculate news sentiment
-        try:
-            news_data = get_news_data(ticker)
-            # Analyze sentiment
-            sentiments = analyze_sentiment(news_data)
-            # Calculate average sentiment
-            avg_sentiment = np.mean(sentiments)
+# Portfolio Optimization
+st.sidebar.title('Portfolio Optimization')
+tickers = st.sidebar.text_input('Enter Ticker Symbols (comma separated)', 'AAPL,MSFT,GOOGL')
+weights = st.sidebar.text_input('Enter Weights (comma separated)', '0.4,0.4,0.2')
 
-            st.subheader('News Sentiment Analysis')
-            st.write(f"Average Sentiment for {ticker}: {avg_sentiment:.2f}")
+if st.sidebar.button('Optimize Portfolio'):
+    try:
+        tickers = [ticker.strip() for ticker in tickers.split(',')]
+        weights = [float(weight.strip()) for weight in weights.split(',')]
+        
+        # Fetch historical data for each ticker
+        portfolio_data = pd.DataFrame()
+        for ticker in tickers:
+            hist = fetch_stock_data(ticker)
+            if not hist.empty:
+                portfolio_data[ticker] = hist['Close']
+        
+        # Normalize weights
+        weights = np.array(weights)
+        weights = weights / np.sum(weights)
+        
+        # Calculate portfolio returns and volatility
+        log_returns = np.log(portfolio_data / portfolio_data.shift(1))
+        portfolio_returns = np.sum(log_returns.mean() * weights) * 252
+        portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(log_returns.cov() * 252, weights)))
+        
+        st.subheader('Portfolio Optimization Results')
+        st.write(f'Expected Portfolio Return: {portfolio_returns * 100:.2f}%')
+        st.write(f'Portfolio Volatility: {portfolio_volatility * 100:.2f}%')
+        st.write('Optimal Weights:')
+        st.write(pd.DataFrame(weights, index=tickers, columns=['Weight']))
+        
+    except Exception as e:
+        st.write(f"Error occurred: {e}")
 
-            # Display news articles
-            st.subheader('Latest News Articles')
-            for article in news_data[:5]:  # Displaying only the first 5 articles
-                st.write(f"**Published At**: {article[0]}")
-                st.write(f"**Title**: {article[1]}")
-                st.write(f"**Summary**: {article[2]}")
-                st.write('---')
 
-        except Exception as e:
-            st.error(f"Error fetching news data: {str(e)}")
-
-# Sidebar for Portfolio Optimization Input
-st.sidebar.header('Portfolio Optimization Input')
-tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
-tickers = [ticker.strip() for ticker in tickers_input.split(',')]
-
-min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100, value=5)
-max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
-
-if st.sidebar.button("Optimize Portfolio"):
-    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
-    
-    st.subheader("Optimal Portfolio Metrics:")
-    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
-    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
-    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
-
-    st.subheader("Optimal Weights:")
-    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
-    st.write(optimal_weights_df)
-
-    # Plot Portfolio Allocation
-    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
-    st.plotly_chart(fig)
-
-    # Display current and historical closing prices for optimized portfolio
-    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
-    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-    st.line_chart(optimized_portfolio_prices)
 
 
 
