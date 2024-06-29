@@ -186,135 +186,102 @@ def optimize_portfolio(tickers, min_weight, max_weight):
         weight_array[i, :] = weights
 
     optimized = minimize(objective, num_assets * [1. / num_assets,], method='SLSQP', bounds=bounds, constraints=constraints)
+    
+    # Extract optimized weights
+    optimized_weights = optimized['x'].round(3)
+    
+    # Calculate optimized portfolio performance metrics
+    optimized_portfolio_return = expected_return(optimized_weights, log_returns)
+    optimized_portfolio_volatility = standard_deviation(optimized_weights, cov_matrix)
+    optimized_portfolio_sharpe_ratio = sharpe_ratio(optimized_weights, log_returns, cov_matrix, risk_free_rate)
 
-    optimal_weights = optimized['x']
-    optimal_portfolio_return = expected_return(optimal_weights, log_returns)
-    optimal_portfolio_volatility = standard_deviation(optimal_weights, cov_matrix)
-    optimal_sharpe_ratio = sharpe_ratio(optimal_weights, log_returns, cov_matrix, risk_free_rate)
+    # Format output
+    portfolio_optimization = {
+        'Tickers': tickers,
+        'Optimized Weights': optimized_weights,
+        'Expected Return': optimized_portfolio_return,
+        'Volatility': optimized_portfolio_volatility,
+        'Sharpe Ratio': optimized_portfolio_sharpe_ratio,
+        'Covariance Matrix': cov_matrix,
+        'Log Returns': log_returns
+    }
 
-    return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
+    return portfolio_optimization
 
-# Streamlit App
-st.title('Stock and Portfolio Analysis')
+# Streamlit app code
+def main():
+    st.title('Stock Analysis and Portfolio Optimization App')
 
-# Sidebar for Stock Analysis Input
-st.sidebar.header('Stock Analysis Input')
-ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
+    # Sidebar options
+    st.sidebar.title('Select Analysis or Optimization')
+    app_mode = st.sidebar.selectbox('Choose the app mode', ['Stock Analysis', 'Portfolio Optimization'])
 
-if st.sidebar.button("Analyze Stock"):
-    # Analyze stock
-    if ticker:
-        result = analyze_stock(ticker)
-        
-        st.subheader(f'Stock Analysis Results for {ticker}')
-        
-        # Sort and group ratios by type
-        grouped_ratios = {
-            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'Price to Sales Ratio', 'P/B Ratio'],
-            'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
-            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
-            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
-            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
-            'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
-            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
-        }
-        
-        for group_name, ratios in grouped_ratios.items():
-            st.subheader(group_name)
-            for ratio in ratios:
-                if result[ratio] is not None:
-                    st.write(f"**{ratio}**: {result[ratio]}")
-            st.write("---")
-        
-        # Fair Value Metrics section
-        st.subheader('Fair Value Metrics')
-        st.write("Enter the required inputs below:")
-        growth_rate = st.number_input('Enter the growth rate (%)', min_value=0.0, max_value=100.0, value=10.0)
-        if st.button('Calculate Fair Value'):
-            # Calculate fair value based on growth rate
-            fair_value = result['Trailing Eps'] * (1 + growth_rate / 100) ** extrapolation_period
-            st.write(f"**Fair Value**: {fair_value:.2f}")
-        st.write("---")
-        
-        # Return Metrics section
-        st.subheader('Return Metrics')
-        st.write("Enter the required inputs below:")
-        extrapolation_period = st.number_input('Enter the extrapolation period (years)', min_value=1, max_value=10, value=5)
-        if st.button('Calculate Return Metrics'):
-            # Perform return metric calculations
-            st.write("Perform return metric calculations here")
-        st.write("---")
-        
-        # Market Metrics section
-        st.subheader('Market Metrics')
-        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
-        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
-        st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
-        st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
-        st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
-        st.write("---")
-        
-        # Risk Management section
-        st.subheader('Risk Management Metrics')
-        st.write(f"**Volatility**: {result['Volatility']:.4f}")
-        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
-        st.write(f"**Beta**: {result['Beta']:.4f}")
-        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
-        st.write("---")
-        
-        # Display current and historical closing prices
-        st.subheader(f'Current and Historical Closing Prices for {ticker}')
-        st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
-        st.line_chart(result['Historical Prices']['Close'])
+    if app_mode == 'Stock Analysis':
+        st.sidebar.subheader('Single Stock Analysis')
+        ticker_symbol = st.sidebar.text_input('Enter Stock Ticker (e.g., AAPL)', 'AAPL')
+        if st.sidebar.button('Analyze'):
+            st.subheader(f'Analysis for {ticker_symbol}')
+            
+            # Fetch and analyze stock data
+            stock_analysis = analyze_stock(ticker_symbol)
+            
+            # Display stock analysis results
+            st.write('### Stock Fundamental Analysis')
+            st.write(stock_analysis)
 
-        # Calculate news sentiment
-        try:
-            news_data = get_news_data(ticker)
+            # Fetch news data
+            news_data = get_news_data(ticker_symbol)
+
             # Analyze sentiment
             sentiments = analyze_sentiment(news_data)
-            # Calculate average sentiment
-            avg_sentiment = np.mean(sentiments)
 
-            st.subheader('News Sentiment Analysis')
-            st.write(f"Average Sentiment for {ticker}: {avg_sentiment:.2f}")
+            # Display sentiment analysis
+            st.write('### News Sentiment Analysis')
+            st.write('Sentiments:', sentiments)
 
             # Display news articles
-            st.subheader('Latest News Articles')
-            for article in news_data[:5]:  # Displaying only the first 5 articles
-                st.write(f"**Published At**: {article[0]}")
-                st.write(f"**Title**: {article[1]}")
-                st.write(f"**Summary**: {article[2]}")
+            st.write('### Latest News')
+            for article in news_data:
+                st.write(article[0], '-', article[1])
+                st.write(article[2])
                 st.write('---')
 
-        except Exception as e:
-            st.error(f"Error fetching news data: {str(e)}")
+    elif app_mode == 'Portfolio Optimization':
+        st.sidebar.subheader('Portfolio Optimization')
+        num_assets = st.sidebar.number_input('Number of Assets', min_value=2, max_value=10, value=3)
+        min_weight = st.sidebar.slider('Minimum Weight (%)', 0, 50, 5)
+        max_weight = st.sidebar.slider('Maximum Weight (%)', 50, 100, 20)
+        tickers = []
+        for i in range(num_assets):
+            tickers.append(st.sidebar.text_input(f'Asset {i+1} Ticker', value='AAPL'))
 
-# Sidebar for Portfolio Optimization Input
-st.sidebar.header('Portfolio Optimization Input')
-tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
-tickers = [ticker.strip() for ticker in tickers_input.split(',')]
+        if st.sidebar.button('Optimize'):
+            st.subheader('Portfolio Optimization Results')
 
-min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100, value=5)
-max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
+            # Perform portfolio optimization
+            portfolio_optimization = optimize_portfolio(tickers, min_weight, max_weight)
 
-if st.sidebar.button("Optimize Portfolio"):
-    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
-    
-    st.subheader("Optimal Portfolio Metrics:")
-    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
-    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
-    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
+            # Display optimized portfolio results
+            st.write('### Optimized Portfolio Weights')
+            for i in range(len(portfolio_optimization['Tickers'])):
+                st.write(f"{portfolio_optimization['Tickers'][i]}: {portfolio_optimization['Optimized Weights'][i] * 100}%")
+            
+            st.write('### Portfolio Performance Metrics')
+            st.write(f"Expected Portfolio Return: {portfolio_optimization['Expected Return']:.2%}")
+            st.write(f"Portfolio Volatility: {portfolio_optimization['Volatility']:.2%}")
+            st.write(f"Sharpe Ratio: {portfolio_optimization['Sharpe Ratio']:.2f}")
 
-    st.subheader("Optimal Weights:")
-    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
-    st.write(optimal_weights_df)
+            # Display covariance matrix
+            st.write('### Covariance Matrix')
+            st.write(portfolio_optimization['Covariance Matrix'])
 
-    # Plot Portfolio Allocation
-    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
-    st.plotly_chart(fig)
+            # Display log returns
+            st.write('### Log Returns')
+            st.write(portfolio_optimization['Log Returns'])
 
-    # Display current and historical closing prices for optimized portfolio
-    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
-    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-    st.line_chart(optimized_portfolio_prices)
+    st.sidebar.info('You can also switch between the modes using the dropdown at the top.')
+
+if __name__ == '__main__':
+    main()
+
 
