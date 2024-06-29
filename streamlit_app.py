@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -227,6 +226,14 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
+        # Risk Management section
+        st.subheader('Risk Management Metrics')
+        st.write(f"**Volatility**: {result['Volatility']:.4f}")
+        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
+        st.write(f"**Beta**: {result['Beta']:.4f}")
+        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+        st.write("---")
+        
         # Market Metrics section
         st.subheader('Market Metrics')
         st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
@@ -234,14 +241,6 @@ if st.sidebar.button("Analyze Stock"):
         st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
         st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
         st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
-        st.write("---")
-        
-        # Risk Management section
-        st.subheader('Risk Management Metrics')
-        st.write(f"**Volatility**: {result['Volatility']:.4f}")
-        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
-        st.write(f"**Beta**: {result['Beta']:.4f}")
-        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
         st.write("---")
         
         # Display current and historical closing prices
@@ -299,6 +298,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
