@@ -197,7 +197,7 @@ def analyze_stock(ticker):
     cost_of_equity = calculate_cost_of_equity(risk_free_rate, beta, average_market_return)
     
     # Calculate valuation metrics
-    growth_rate = info.get('earningsQuarterlyGrowth', 0)
+    growth_rate = 0.10
     peter_lynch_score = calculate_peter_lynch_score(ticker, growth_rate)
     graham_valuation = calculate_graham_valuation(ticker, growth_rate)
     formula_valuation = calculate_formula_valuation(ticker, growth_rate)
