@@ -42,7 +42,7 @@ def fetch_stock_data(ticker):
     return hist
 
 # Function to analyze stock based on ticker symbol
-def analyze_stock(ticker):
+def analyze_stock(ticker, growth_rate=None, extrapolation_period=None):
     stock = yf.Ticker(ticker)
     info = stock.info
     hist = fetch_stock_data(ticker)
@@ -317,6 +317,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
