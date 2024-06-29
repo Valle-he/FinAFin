@@ -299,7 +299,7 @@ if st.sidebar.button("Optimize Portfolio"):
     # Display current and historical closing prices for optimized portfolio
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-    st.line_chart(optimized_portfolio_prices
+    st.line_chart(optimized_portfolio_prices)
 
 
 
