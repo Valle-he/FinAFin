@@ -394,8 +394,8 @@ if st.sidebar.button("Analyze Stock"):
                     if formula_valuation is not None:
                      st.write(f'Formula Valuation: {formula_valuation:.2f}, Expected Return: {formula_expected_return:.2%}')
 
-                except Exception as e:
-                    st.error(f'Error calculating valuation metrics for {ticker}: {str(e)}')
+                except ValueError:
+                    st.error('Please enter a valid growth rate (as decimal).')
 
         if result['Expected Return (Fundamental)'] is not None:
             st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
