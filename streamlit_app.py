@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -42,7 +43,7 @@ def fetch_stock_data(ticker):
     return hist
 
 # Function to analyze stock based on ticker symbol
-def analyze_stock(ticker, growth_rate=None, extrapolation_period=None):
+def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
     info = stock.info
     hist = fetch_stock_data(ticker)
@@ -226,25 +227,6 @@ if st.sidebar.button("Analyze Stock"):
                     st.write(f"**{ratio}**: {result[ratio]}")
             st.write("---")
         
-        # Fair Value Metrics section
-        st.subheader('Fair Value Metrics')
-        st.write("Enter the required inputs below:")
-        growth_rate = st.number_input('Enter the growth rate (%)', min_value=0.0, max_value=100.0, value=10.0)
-        extrapolation_period = st.number_input('Enter the extrapolation period (years)', min_value=1, max_value=10, value=5)
-        if st.button('Calculate Fair Value'):
-            # Calculate fair value based on growth rate
-            fair_value = result['Trailing Eps'] * (1 + growth_rate / 100) ** extrapolation_period
-            st.write(f"**Fair Value**: {fair_value:.2f}")
-        st.write("---")
-        
-        # Return Metrics section
-        st.subheader('Return Metrics')
-        st.write("Enter the required inputs below:")
-        if st.button('Calculate Return Metrics'):
-            # Perform return metric calculations
-            st.write("Perform return metric calculations here")
-        st.write("---")
-        
         # Market Metrics section
         st.subheader('Market Metrics')
         st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
@@ -317,6 +299,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
