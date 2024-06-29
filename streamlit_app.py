@@ -379,16 +379,23 @@ if st.sidebar.button("Analyze Stock"):
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
         growth_rate = st.number_input('Enter Growth Rate (as decimal):', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
-        if 'Peter Lynch Score' in result and result['Peter Lynch Score'] is not None:
-            st.write(f"**Peter Lynch Score**: {result['Peter Lynch Score']:.2f}")
-        else:
-            st.write("**Peter Lynch Score**: N/A")
+        if st.button('Calculate Valuation Metrics'):
+            if ticker:
+                try:
+                    peter_lynch_score, peter_lynch_expected_return = calculate_peter_lynch_score(ticker, growth_rate)
+                    graham_valuation, graham_expected_return = calculate_graham_valuation(ticker, growth_rate)
+                    formula_valuation, formula_expected_return = calculate_formula_valuation(ticker, growth_rate)
 
-        st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
-        if result['Formula Valuation'] is not None:
-            st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
-        else:
-            st.write("**Formula Valuation**: N/A")
+                    st.subheader('Valuation Metrics')
+                    if peter_lynch_score is not None:
+                      st.write(f'Peter Lynch Score: {peter_lynch_score:.2f}, Expected Return: {peter_lynch_expected_return:.2%}')
+                    if graham_valuation is not None:
+                      st.write(f'Graham Valuation: {graham_valuation:.2f}, Expected Return: {graham_expected_return:.2%}')
+                    if formula_valuation is not None:
+                     st.write(f'Formula Valuation: {formula_valuation:.2f}, Expected Return: {formula_expected_return:.2%}')
+
+                except Exception as e:
+                    st.error(f'Error calculating valuation metrics for {ticker}: {str(e)}')
 
         if result['Expected Return (Fundamental)'] is not None:
             st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
