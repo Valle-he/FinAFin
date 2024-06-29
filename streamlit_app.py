@@ -41,6 +41,53 @@ def fetch_stock_data(ticker):
     hist = stock.history(period='5y')
     return hist
 
+# Function to calculate Fair Value nach Graham
+def calculate_graham_valuation(ticker, growth_rate=0.10):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    EPS = info.get('trailingEps', None)
+    if EPS is None:
+        return None
+    fair_value = EPS * (8.5 + 2 * growth_rate)
+    return fair_value
+
+# Function to calculate Fair Value nach Formel
+def calculate_formula_valuation(ticker, growth_rate=0.10):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    EPS = info.get('trailingEps', None)
+    if EPS is None:
+        return None
+    fair_value = EPS * (15 + growth_rate * 100)
+    return fair_value
+
+# Function to calculate Peter Lynch Valuation Score
+def calculate_peter_lynch_score(ticker, growth_rate=0.10):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    PEG_ratio = info.get('pegRatio', None)
+    if PEG_ratio is None or PEG_ratio <= 0:
+        return None
+    peter_lynch_score = 1 / PEG_ratio
+    return peter_lynch_score
+
+# Function to calculate Expected Return (fundamental)
+def calculate_expected_return(ticker, growth_rate=0.10):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    EPS = info.get('trailingEps', None)
+    if EPS is None:
+        return None
+    expected_return = EPS / info.get('previousClose', 0) + growth_rate * 100
+    return expected_return
+
+# Function to calculate Expected Return (historical)
+def calculate_expected_return_historical(ticker):
+    hist = fetch_stock_data(ticker)
+    historical_returns = hist['Close'].pct_change().dropna()
+    expected_return = historical_returns.mean() * 252 * 100  # Annualized return
+    return expected_return
+
 # Function to analyze stock based on ticker symbol
 def analyze_stock(ticker):
     stock = yf.Ticker(ticker)
@@ -82,6 +129,21 @@ def analyze_stock(ticker):
 
     # Calculate Cost of Equity
     cost_of_equity = calculate_cost_of_equity(risk_free_rate, beta, average_market_return)
+    
+    # Calculate Fair Value nach Graham
+    graham_valuation = calculate_graham_valuation(ticker, growth_rate=0.10)  # Assuming growth rate of 10%
+    
+    # Calculate Fair Value nach Formel
+    formula_valuation = calculate_formula_valuation(ticker, growth_rate=0.10)  # Assuming growth rate of 10%
+    
+    # Calculate Peter Lynch Valuation Score
+    peter_lynch_score = calculate_peter_lynch_score(ticker, growth_rate=0.10)  # Assuming growth rate of 10%
+    
+    # Calculate Expected Return (fundamental)
+    expected_return = calculate_expected_return(ticker, growth_rate=0.10)  # Assuming growth rate of 10%
+    
+    # Calculate Expected Return (historical)
+    historical_return = calculate_expected_return_historical(ticker)
     
     analysis = {
         'Ticker': ticker,
@@ -125,6 +187,11 @@ def analyze_stock(ticker):
         'Beta': beta,
         'Market Correlation': correlation,
         'Cost of Equity': cost_of_equity,
+        'Fair Value (Graham)': graham_valuation,
+        'Fair Value (Formula)': formula_valuation,
+        'Peter Lynch Score': peter_lynch_score,
+        'Expected Return (Fundamental)': expected_return,
+        'Expected Return (Historical)': historical_return,
         'Historical Prices': hist
     }
     
@@ -217,6 +284,7 @@ if st.sidebar.button("Analyze Stock"):
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share'],
             'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
             'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
+            'Fair Value and Return Metrics': ['Fair Value (Graham)', 'Fair Value (Formula)', 'Peter Lynch Score', 'Expected Return (Fundamental)', 'Expected Return (Historical)'],
         }
         
         for group_name, ratios in grouped_ratios.items():
@@ -298,6 +366,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
