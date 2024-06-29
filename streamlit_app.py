@@ -215,7 +215,7 @@ def analyze_stock(ticker):
         'Ticker': ticker,
         'P/E Ratio': info.get('trailingPE'),
         'Forward P/E': info.get('forwardPE'),
-        'Price to Sales Ratio': info.get('priceToSalesTrailing12Months'),
+        'P/S Ratio': info.get('priceToSalesTrailing12Months'),
         'P/B Ratio': info.get('priceToBook'),
         'Dividend Yield': info.get('dividendYield'),
         'Trailing Eps': info.get('trailingEps'),
