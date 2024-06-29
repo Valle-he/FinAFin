@@ -378,7 +378,7 @@ if st.sidebar.button("Analyze Stock"):
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
-        growth_rate = st.number_input('Enter Growth Rate (as decimal):', min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        growth_rate = st.text_input('Enter Growth Rate (as decimal):', '0.10')
         if st.button('Calculate Valuation Metrics'):
             if ticker:
                 try:
