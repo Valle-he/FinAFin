@@ -179,15 +179,16 @@ def analyze_stock(ticker):
     sp500_aligned = sp500.loc[common_index, 'Log Return'].dropna()
 
 # Calculate covariance
-    if len(hist_aligned) == 0 or len(sp500_aligned) == 0:
-       raise ValueError("Not enough data to calculate covariance.")
+    if len(hist_aligned) != len(sp500_aligned):
+        return {"Error": "Data lengths do not match"}
 
-    covariance = np.cov(hist_aligned, sp500_aligned)[0, 1]
-    beta = covariance / sp500['Log Return'].var()
-
-
-
-    beta = covariance / sp500['Log Return'].var()
+        # Calculate covariance and beta
+    try:
+        covariance = np.cov(hist_aligned, sp500_aligned)[0, 1]
+        beta = covariance / sp500_aligned.var()
+    except Exception as e:
+        covariance = "N/A"
+        beta = "N/A"
     
     # Calculate correlation with market (S&P 500)
     correlation = hist['Log Return'].corr(sp500['Log Return'])
