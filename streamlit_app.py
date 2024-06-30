@@ -14,9 +14,15 @@ alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
 
 # Funktion zur Berechnung der aktuellen Dividendenrendite
 def get_dividend_yield(ticker):
-    stock = yf.Ticker(ticker)
-    dividend_yield = stock.info.get('dividendYield', None)
-    return dividend_yield
+    try:
+        stock = yf.Ticker(ticker)
+        dividend_yield = stock.info.get('dividendYield', None)
+        if dividend_yield is None:
+            raise ValueError(f"No dividend yield available for {ticker}")
+        return dividend_yield
+    except Exception as e:
+        raise ValueError(f"Error fetching dividend yield for {ticker}: {str(e)}")
+
 
 # Funktion zur Berechnung des Peter Lynch Valuation Scores
 def calculate_peter_lynch_score(ticker, growth_rate):
