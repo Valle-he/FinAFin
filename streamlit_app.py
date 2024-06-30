@@ -412,7 +412,11 @@ if st.sidebar.button("Analyze Stock"):
         else:
             st.write("**Peter Lynch Score**: N/A")
 
-        st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
+        if result['Graham Valuation'] is not None:
+            st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
+        else:
+            st.write("**Graham Valuation**: N/A")
+
         if result['Formula Valuation'] is not None:
             st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
         else:
@@ -423,7 +427,11 @@ if st.sidebar.button("Analyze Stock"):
         else:
             st.write("**Expected Return (Fundamental)**: N/A")
 
-        st.write(f"**Historical Return (5 Years Average)**: {result['Historical Expected Return']:.4f}")
+        if result['Historical Expected Return'] is not None:
+            st.write(f"**Historical Return (5 Years Average)**: {result['Historical Expected Return']:.4f}")
+        else:
+            st.write("**Historical Return (5 Years Average)**: N/A")
+        
         st.write("---")
         
         # Display current and historical closing prices
