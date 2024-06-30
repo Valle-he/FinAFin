@@ -448,10 +448,11 @@ if st.sidebar.button("Analyze Stock"):
             st.write("**Formula Valuation**: N/A")
 
 
-        if result['Expected Return (Fundamental)'] is not None:
+        if 'Expected Return (Fundamental)' in result and result['Expected Return (Fundamental)'] is not None:
             st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
         else:
             st.write("**Expected Return (Fundamental)**: N/A")
+
 
         if result['Historical Expected Return'] is not None:
             st.write(f"**Historical Return (5 Years Average)**: {result['Historical Expected Return']:.4f}")
