@@ -179,7 +179,11 @@ def analyze_stock(ticker):
     sp500_aligned = sp500.loc[common_index, 'Log Return'].dropna()
 
 # Calculate covariance
-    covariance = np.cov(hist_aligned, sp500_aligned)[0, 1]
+    if len(hist_aligned) == len(sp500_aligned) and len(hist_aligned) > 0:
+        covariance = np.cov(hist_aligned, sp500_aligned)[0, 1]
+    else:
+        st.error("Die historischen Daten des Aktienkurses und des S&P 500 Index stimmen nicht überein oder sind leer.")
+
 
     beta = covariance / sp500['Log Return'].var()
     
