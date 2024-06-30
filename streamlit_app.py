@@ -436,7 +436,10 @@ if st.sidebar.button("Analyze Stock"):
         
         # Display current and historical closing prices
         st.subheader(f'Current and Historical Closing Prices for {ticker}')
-        st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
+        if not result['Historical Prices']['Close'].empty:
+            st.write(f"**Current Price**: {result['Historical Prices']['Close'][-1]}")
+        else:
+           st.write("**Current Price**: Data not available")
         st.line_chart(result['Historical Prices']['Close'])
 
         # Calculate news sentiment
