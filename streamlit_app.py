@@ -431,6 +431,7 @@ if st.sidebar.button("Analyze Stock"):
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
+       
         if 'Peter Lynch Score' in result and result['Peter Lynch Score'] is not None:
             st.write(f"**Peter Lynch Score**: {result['Peter Lynch Score']:.2f}")
         else:
