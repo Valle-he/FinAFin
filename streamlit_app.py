@@ -334,13 +334,6 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 
     return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
 
-market_cap = result['Market Cap (Billion $)']
-enterprise_value = result['Enterprise Value (Billion $)']
-peter_lynch_score = result['Peter Lynch Score']
-graham_valuation = result['Graham Valuation']
-formula_valuation = result['Formula Valuation']
-expected_return = result['Expected Return (Fundamental)']
-
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
 
@@ -382,18 +375,9 @@ if st.sidebar.button("Analyze Stock"):
         st.write("---")
         
         # Market Metrics section
-
         st.subheader('Market Metrics')
-        if market_cap is not None:
-            st.write(f"**Market Cap (Billion $)**: {market_cap:.2f}")
-        else:
-            st.write("**Market Cap (Billion $)**: N/A")
-        
-        if enterprise_value is not None:
-            st.write(f"**Enterprise Value (Billion $)**: {enterprise_value:.2f}")
-        else:
-            st.write("**Enterprise Value (Billion $)**: N/A")
-        
+        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
+        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
         st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
         st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
         st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
@@ -475,6 +459,7 @@ if st.sidebar.button("Optimize Portfolio"):
     st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
     optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
     st.line_chart(optimized_portfolio_prices)
+
 
 
 
