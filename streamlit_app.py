@@ -205,9 +205,15 @@ def analyze_stock(ticker):
         return cost_of_equity
 
     # Use FRED API to get current 10-year Treasury rate
-    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
-    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
-    risk_free_rate = ten_year_treasury_rate.iloc[-1]
+    def get_treasury_rate():
+        try:
+            fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+            ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+            return ten_year_treasury_rate.iloc[-1]
+        except Exception as e:
+            st.error(f"Error fetching treasury rate: {str(e)}")
+            return None
+
 
     # Calculate average market return (you may need to adjust this calculation based on your data)
     # Example: Using S&P 500 index return as average market return
