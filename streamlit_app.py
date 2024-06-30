@@ -54,9 +54,15 @@ def calculate_graham_valuation(ticker, growth_rate):
         return None  # Wenn EPS nicht verfügbar, kein Fair Value berechnen
     
     # Risk-Free Rate über FRED API abrufen
-    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
-    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
-    risk_free_rate = ten_year_treasury_rate.iloc[-1]
+def get_treasury_rate():
+    try:
+        fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+        ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+        return ten_year_treasury_rate.iloc[-1]
+    except Exception as e:
+        st.error(f"Error fetching treasury rate: {str(e)}")
+        return None
+
     
     # Fair Value nach Graham Formel berechnen
     graham_valuation = (eps * (8.5 + (2 * growth_rate) * 100) * 4.4) / (risk_free_rate * 100)
