@@ -375,13 +375,35 @@ if st.sidebar.button("Analyze Stock"):
         st.write("---")
         
         # Market Metrics section
+        # Market Metrics section
         st.subheader('Market Metrics')
-        st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
-        st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
-        st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
-        st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
-        st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
+
+        if result['Market Cap (Billion $)'] is not None:
+            st.write(f"**Market Cap (Billion $)**: {result['Market Cap (Billion $)']:.2f}")
+        else:
+            st.write("**Market Cap (Billion $)**: N/A")
+
+        if result['Enterprise Value (Billion $)'] is not None:
+            st.write(f"**Enterprise Value (Billion $)**: {result['Enterprise Value (Billion $)']:.2f}")
+        else:
+            st.write("**Enterprise Value (Billion $)**: N/A")
+
+        if result['Enterprise to Revenue'] is not None:
+            st.write(f"**Enterprise to Revenue**: {result['Enterprise to Revenue']:.4f}")
+        else:
+            st.write("**Enterprise to Revenue**: N/A")
+
+        if result['Enterprise to EBITDA'] is not None:
+            st.write(f"**Enterprise to EBITDA**: {result['Enterprise to EBITDA']:.4f}")
+        else:
+            st.write("**Enterprise to EBITDA**: N/A")
+
+        if result['Cost of Equity'] is not None:
+            st.write(f"**Cost of Equity**: {result['Cost of Equity']:.4f}")
+        else:
+            st.write("**Cost of Equity**: N/A")
         st.write("---")
+
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
