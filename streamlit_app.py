@@ -362,8 +362,10 @@ if st.sidebar.button("Analyze Stock"):
         for group_name, ratios in grouped_ratios.items():
             st.subheader(group_name)
             for ratio in ratios:
-                if result[ratio] is not None:
+                if ratio in result and result[ratio] is not None:
                     st.write(f"**{ratio}**: {result[ratio]}")
+                else:
+                    st.write(f"**{ratio}**: N/A")
             st.write("---")
         
         # Risk Management section
