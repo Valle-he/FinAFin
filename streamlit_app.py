@@ -129,7 +129,12 @@ def calculate_expected_return_historical(ticker):
 def get_news_data(ticker):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={alpha_vantage_api_key}'
     response = requests.get(url)
-    news_data = response.json()
+    try:
+        response.raise_for_status()
+        news_data = response.json()
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching news data: {str(e)}")
+        return []
     articles = news_data.get('feed', [])
     news_list = []
     for article in articles:
@@ -138,6 +143,7 @@ def get_news_data(ticker):
         description = article['summary']
         news_list.append([published_at, title, description])
     return news_list
+
 
 # Function to analyze sentiment using TextBlob
 def analyze_sentiment(news_data):
