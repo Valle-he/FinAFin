@@ -431,7 +431,6 @@ if st.sidebar.button("Analyze Stock"):
         
         # Valuation Metrics section
         st.subheader('Valuation Metrics')
-       
         if 'Peter Lynch Score' in result and result['Peter Lynch Score'] is not None:
             st.write(f"**Peter Lynch Score**: {result['Peter Lynch Score']:.2f}")
         else:
@@ -443,10 +442,11 @@ if st.sidebar.button("Analyze Stock"):
             st.write("**Graham Valuation**: N/A")
 
 
-        if result['Formula Valuation'] is not None:
+        if 'Formula Valuation' in result and result['Formula Valuation'] is not None:
             st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
         else:
             st.write("**Formula Valuation**: N/A")
+
 
         if result['Expected Return (Fundamental)'] is not None:
             st.write(f"**Expected Return (Fundamental)**: {result['Expected Return (Fundamental)']:.4f}")
