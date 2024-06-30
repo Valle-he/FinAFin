@@ -436,10 +436,11 @@ if st.sidebar.button("Analyze Stock"):
         else:
             st.write("**Peter Lynch Score**: N/A")
 
-        if result['Graham Valuation'] is not None:
+        if 'Graham Valuation' in result and result['Graham Valuation'] is not None:
             st.write(f"**Graham Valuation**: {result['Graham Valuation']:.2f}")
         else:
             st.write("**Graham Valuation**: N/A")
+
 
         if result['Formula Valuation'] is not None:
             st.write(f"**Formula Valuation**: {result['Formula Valuation']:.2f}")
