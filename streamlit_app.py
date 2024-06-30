@@ -369,12 +369,30 @@ if st.sidebar.button("Analyze Stock"):
             st.write("---")
         
         # Risk Management section
+        # Risk Management section
         st.subheader('Risk Management Metrics')
-        st.write(f"**Volatility**: {result['Volatility']:.4f}")
-        st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
-        st.write(f"**Beta**: {result['Beta']:.4f}")
-        st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+
+        if 'Volatility' in result and result['Volatility'] is not None:
+            st.write(f"**Volatility**: {result['Volatility']:.4f}")
+        else:
+            st.write("**Volatility**: N/A")
+
+        if 'Max Drawdown' in result and result['Max Drawdown'] is not None:
+            st.write(f"**Max Drawdown**: {result['Max Drawdown']:.4f}")
+        else:
+            st.write("**Max Drawdown**: N/A")
+
+        if 'Beta' in result and result['Beta'] is not None:
+            st.write(f"**Beta**: {result['Beta']:.4f}")
+        else:
+           st.write("**Beta**: N/A")
+
+        if 'Market Correlation' in result and result['Market Correlation'] is not None:
+           st.write(f"**Market Correlation**: {result['Market Correlation']:.4f}")
+        else:
+           st.write("**Market Correlation**: N/A")
         st.write("---")
+
         
         # Market Metrics section
         # Market Metrics section
