@@ -469,7 +469,7 @@ if st.sidebar.button("Analyze Stock"):
             st.write("**Formula Valuation**: N/A")
 
         if 'Target Price' is not None:
-            st.write(f"**Target Price)**: {result['Target Price']:.4f}")
+            st.write(f"**Target Price**: {result['Target Price']:.4f}")
         else:
             st.write("**Target Price**: N/A")
 
