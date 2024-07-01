@@ -28,22 +28,23 @@ def get_dividend_yield(ticker):
 
 # Funktion zur Berechnung des Peter Lynch Valuation Scores
 def calculate_peter_lynch_score(ticker, growth_rate):
-    # Dividendenrendite abrufen
     dividend_yield = get_dividend_yield(ticker)
-    
     if dividend_yield is None or dividend_yield <= 0:
-        return None  # Wenn Dividendenrendite nicht verfügbar oder <= 0, kein Score berechnen
-    
-    # P/E Ratio abrufen
+        st.warning(f"Invalid dividend yield for {ticker}")
+        return None
+
     stock = yf.Ticker(ticker)
     pe_ratio = stock.info.get('trailingPE', None)
-    
     if pe_ratio is None:
-        return None  # Wenn P/E Ratio nicht verfügbar, kein Score berechnen
-    
-    # Score gemäß der Formel berechnen
-    peter_lynch_score = (growth_rate * 100) / (pe_ratio * dividend_yield * 100)
-    
+        st.warning(f"P/E ratio not available for {ticker}")
+        return None
+
+    try:
+        peter_lynch_score = (growth_rate * 100) / (pe_ratio * dividend_yield * 100)
+    except ZeroDivisionError:
+        st.error("Division by zero encountered in Peter Lynch score calculation")
+        return None
+
     return peter_lynch_score
 
 # Funktion zur Berechnung des Fair Value nach Graham
