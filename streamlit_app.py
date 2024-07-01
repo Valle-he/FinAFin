@@ -376,7 +376,7 @@ if st.sidebar.button("Analyze Stock"):
             'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
             'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share','Gross Profits'],
-            'Financial Health': [ 'Debt to Equity Ratio', 'Current Ratio','Total Debt (Million $)'],
+            'Financial Health': [ 'Debt to Equity Ratio', 'Current Ratio'],
             'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
         }
         
