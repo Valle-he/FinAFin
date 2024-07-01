@@ -704,7 +704,25 @@ def calculate_portfolio_metrics(portfolio):
     return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, portfolio_values
 
 # Grafische Darstellung der Portfolio-Performance
-def plot
+def plot_portfolio_performance(portfolio_values):
+    fig = px.line(portfolio_values, y='Total', title='Kumulative Portfolio-Performance')
+    fig.update_layout(xaxis_title='Datum', yaxis_title='Gesamtwert')
+    st.plotly_chart(fig)
+
+# Grafische Darstellung der Asset-Allokation
+def plot_asset_allocation(portfolio):
+    labels = [stock['ticker'] for stock in portfolio]
+    sizes = [stock['current_value'] for stock in portfolio]
+
+    fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3)])
+    fig.update_layout(title_text='Asset Allocation')
+    st.plotly_chart(fig)
+
+# Streamlit App
+
+# Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
+st.sidebar.title("Portfolio Management App")
+get_portfolio_data()
 
 
 
