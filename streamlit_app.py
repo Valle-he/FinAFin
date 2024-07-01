@@ -281,6 +281,7 @@ def analyze_stock(ticker):
         'Expected Return (Fundamental)': expected_return,
         'Historical Expected Return': historical_expected_return,
         'Historical Prices': hist,
+        'Quick Ratio': info.get('quickRatio'),
     
 'Audit Risk': info.get('auditRisk'),
 'Board Risk': info.get('boardRisk'),
