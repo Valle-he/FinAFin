@@ -553,7 +553,7 @@ if st.sidebar.button("Optimize Portfolio"):
                 st.error("Error optimizing portfolio.")
             else:
                 st.subheader("Optimal Portfolio Metrics:")
-                st.write(f"Expected Annual Return: {optimal_portfolio_return*100:.4f}%")
+                st.write(f"Expected Annual Return: {optimal_portfolio_return*100:.4f}")
                 st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility*100:.4f}%")
                 st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
 
