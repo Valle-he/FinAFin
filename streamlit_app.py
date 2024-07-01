@@ -352,20 +352,9 @@ st.sidebar.title('Stock and Portfolio Analysis')
 
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
-
-# Überprüfung, ob der Tickersymbol gültig ist
 if not ticker.isalpha():
     st.error("Invalid ticker symbol. Please enter a valid stock ticker.")
-else:
-    # Versuche den Tickersymbol zu verwenden, um Informationen abzurufen
-    try:
-        stock = yf.Ticker(ticker)
-        stock_info = stock.info
-        # Fortfahren mit der Analyse hier
-        st.write(f"Stock information for {ticker}:")
-        st.write(stock_info)
-    except Exception as e:
-        st.error(f"Error: Ticker symbol '{ticker}' not found. Please enter a valid stock ticker.")
+
 
 if st.sidebar.button("Analyze Stock"):
     if ticker:
