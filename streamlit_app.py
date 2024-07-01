@@ -285,7 +285,7 @@ def analyze_stock(ticker):
         'Total Revenue per Share': info.get('totalRevenuePerShare'),
         'Total Cash Per Share': info.get('totalCashPerShare'),
         'Free Cashflow': info.get('freeCashflow'),
-
+        
     
 'Audit Risk': info.get('auditRisk'),
 'Board Risk': info.get('boardRisk'),
@@ -439,7 +439,6 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 
     return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
 
-    
 
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
@@ -530,159 +529,6 @@ if st.sidebar.button("Analyze Stock"):
 
         except Exception as e:
             st.error(f"Error fetching news data: {str(e)}")
-            
-# Sidebar for Portfolio Tracker Input
-st.sidebar.header('Portfolio Tracker Input')
-
-# Initialize lists to store user inputs
-ticker_inputs = []
-date_inputs = []
-investment_amount_inputs = []
-
-add_more = st.sidebar.button('Add Investment')
-if add_more:
-    ticker_input = st.sidebar.text_input('Enter Ticker:', '')
-    date_input = st.sidebar.date_input('Enter Investment Date:', datetime.today())
-    investment_amount_input = st.sidebar.number_input('Enter Investment Amount:', min_value=0.01, step=0.01, format="%.2f")
-    
-    if ticker_input and date_input and investment_amount_input:
-        ticker_inputs.append(ticker_input)
-        date_inputs.append(date_input)
-        investment_amount_inputs.append(investment_amount_input)
-
-calculate_button = st.sidebar.button('Calculate')
-
-# Portfolio Tracker Calculation
-if calculate_button:
-    st.sidebar.subheader('Portfolio Tracker Results')
-    
-    # Calculate total portfolio value
-    total_portfolio_value = 0.0
-    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
-        try:
-            stock = yf.Ticker(ticker)
-            current_price = stock.history(period='1d')['Close'].iloc[-1]
-            days_held = (datetime.today() - investment_date).days
-            investment_value = investment_amount * (1 + current_price / stock.history(period='1d')['Close'].iloc[-days_held])
-            total_portfolio_value += investment_value
-        except Exception as e:
-            st.error(f"Error calculating portfolio value for {ticker}: {str(e)}")
-    
-    # Calculate cumulative weighted return
-    cumulative_weighted_return = 0.0
-    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
-        try:
-            stock = yf.Ticker(ticker)
-            initial_price = stock.history(start=investment_date, end=datetime.today())['Close'].iloc[0]
-            current_price = stock.history(period='1d')['Close'].iloc[-1]
-            days_held = (datetime.today() - investment_date).days
-            investment_return = (current_price - initial_price) / initial_price * investment_amount
-            cumulative_weighted_return += investment_return
-        except Exception as e:
-            st.error(f"Error calculating cumulative weighted return for {ticker}: {str(e)}")
-    
-    # Calculate current weighted portfolio volatility
-    current_portfolio_volatility = 0.0
-    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
-        try:
-            stock = yf.Ticker(ticker)
-            days_held = (datetime.today() - investment_date).days
-            historical_returns = stock.history(start=investment_date, end=datetime.today())['Close'].pct_change().dropna()
-            annualized_volatility = historical_returns.std() * np.sqrt(252)
-            weighted_volatility = annualized_volatility * investment_amount / total_portfolio_value
-            current_portfolio_volatility += weighted_volatility
-        except Exception as e:
-            st.error(f"Error calculating current portfolio volatility for {ticker}: {str(e)}")
-    
-# Sidebar for Portfolio Tracker Input
-st.sidebar.header('Portfolio Tracker Input')
-
-class Investment:
-    def __init__(self, ticker='', date='', amount=0):
-        self.ticker = ticker
-        self.date = date
-        self.amount = amount
-
-investments = []
-
-# Function to add investment input fields
-def add_investment():
-    investments.append(Investment())
-
-# Function to remove investment input fields
-def remove_investment(index):
-    if len(investments) > 0:
-        investments.pop(index)
-
-# Initial investment input fields
-add_investment()
-
-for index, investment in enumerate(investments):
-    investment_col1, investment_col2, investment_col3 = st.columns([1, 1, 2])
-    with investment_col1:
-        investment.ticker = st.text_input(f'Ticker {index + 1}', investment.ticker)
-    with investment_col2:
-        investment.date = st.date_input(f'Date Invested {index + 1}', investment.date)
-    with investment_col3:
-        investment.amount = st.number_input(f'Investment Amount {index + 1}', min_value=0.0, format="%.2f", value=investment.amount)
-
-if st.button("Add Another Investment"):
-    add_investment()
-
-if st.button("Remove Last Investment"):
-    remove_investment(-1)
-
-# Button to calculate portfolio metrics
-if st.button("Calculate Portfolio Metrics"):
-    portfolio_value = 0
-    total_investment = 0
-    total_weighted_return = 0
-    total_weighted_volatility = 0
-
-    portfolio_data = {}
-
-    for investment in investments:
-        if investment.ticker and investment.date and investment.amount > 0:
-            result = analyze_stock(investment.ticker)
-            if 'Error' not in result:
-                current_price = result['Historical Prices']['Close'][-1]
-                portfolio_value += current_price * investment.amount
-                total_investment += investment.amount
-                total_weighted_return += result['Expected Return (Fundamental)'] * investment.amount
-                total_weighted_volatility += result['Volatility'] * investment.amount
-                portfolio_data[investment.ticker] = {
-                    'Investment Date': investment.date,
-                    'Investment Amount': investment.amount,
-                    'Current Price': current_price,
-                    'Expected Return (Fundamental)': result['Expected Return (Fundamental)'],
-                    'Volatility': result['Volatility']
-                }
-
-    st.subheader('Portfolio Metrics')
-    st.write(f"Total Portfolio Value: ${portfolio_value:.2f}")
-
-    if total_investment > 0:
-        cumulative_weighted_return = total_weighted_return / total_investment
-        cumulative_weighted_volatility = total_weighted_volatility / total_investment
-        st.write(f"Cumulative Weighted Return: {cumulative_weighted_return:.2%}")
-        st.write(f"Current Weighted Portfolio Volatility: {cumulative_weighted_volatility:.2%}")
-
-    # Plot portfolio development over time
-    if portfolio_data:
-        portfolio_df = pd.DataFrame(portfolio_data).T
-        portfolio_df['Investment Date'] = pd.to_datetime(portfolio_df['Investment Date'])
-        fig = px.line(portfolio_df, x='Investment Date', y='Current Price', title='Portfolio Development')
-        st.plotly_chart(fig)
-
-        # Pie chart of allocation (weights)
-        weights = np.ones(len(portfolio_df.index)) / len(portfolio_df.index)
-        fig_allocation = px.pie(values=weights, names=portfolio_df.index, title='Portfolio Allocation')
-        st.plotly_chart(fig_allocation)
-
-    st.write('---')
-
-
-
 
 # Sidebar for Portfolio Optimization Input
 # Sidebar for Portfolio Optimization Input
