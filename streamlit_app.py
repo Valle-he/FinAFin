@@ -150,7 +150,6 @@ def get_news_data(ticker):
         news_list.append([published_at, title, description])
     return news_list
 
-
 # Function to analyze sentiment using TextBlob
 def analyze_sentiment(news_data):
     sentiments = []
