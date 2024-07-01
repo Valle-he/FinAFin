@@ -280,46 +280,48 @@ def analyze_stock(ticker):
         'Formula Valuation': formula_valuation,
         'Expected Return (Fundamental)': expected_return,
         'Historical Expected Return': historical_expected_return,
-        'Historical Prices': hist, 
+        'Historical Prices': hist,
+    
         'Audit Risk': info.get('auditRisk'),
-        'Board Risk': info.get('boardRisk'),
-        'Compensation Risk': info.get('compensationRisk'),
-        'Shareholder Rights Risk': info.get('shareHolderRightsRisk'),
-        'Overall Risk': info.get('overallRisk'),
-        'Price Hint': info.get('priceHint'),
-        'Previous Close': info.get('previousClose'),
-        'Open': info.get('open'),
-        'Day Low': info.get('dayLow'),
-        'Day High': info.get('dayHigh'),
-        'Regular Market Previous Close': info.get('regularMarketPreviousClose'),
-        'Regular Market Open': info.get('regularMarketOpen'),
-        'Regular Market Day Low': info.get('regularMarketDayLow'),
-        'Regular Market Day High': info.get('regularMarketDayHigh'),
+'Board Risk': info.get('boardRisk'),
+'Compensation Risk': info.get('compensationRisk'),
+'Shareholder Rights Risk': info.get('shareHolderRightsRisk'),
+'Overall Risk': info.get('overallRisk'),
 
-        'Ex-Dividend Date': info.get('exDividendDate'),
-        'Five Year Average Dividend Yield': info.get('fiveYearAvgDividendYield'),
+'Price Hint': info.get('priceHint'),
+'Previous Close': info.get('previousClose'),
+'Open': info.get('open'),
+'Day Low': info.get('dayLow'),
+'Day High': info.get('dayHigh'),
+'Regular Market Previous Close': info.get('regularMarketPreviousClose'),
+'Regular Market Open': info.get('regularMarketOpen'),
+'Regular Market Day Low': info.get('regularMarketDayLow'),
+'Regular Market Day High': info.get('regularMarketDayHigh'),
 
-        'Volume': info.get('volume'),
-        'Regular Market Volume': info.get('regularMarketVolume'),
-        'Average Volume': info.get('averageVolume'),
-        'Average Volume 10 Days': info.get('averageVolume10days'),
-        'Average Daily Volume 10 Day': info.get('averageDailyVolume10Day'),
-        'Bid': info.get('bid'),
-        'Ask': info.get('ask'),
-        'Bid Size': info.get('bidSize'),
-        'Ask Size': info.get('askSize'),
+'Ex-Dividend Date': info.get('exDividendDate'),
+'Five Year Average Dividend Yield': info.get('fiveYearAvgDividendYield'),
 
-        'Fifty-Two Week Low': info.get('fiftyTwoWeekLow'),
-        'Fifty-Two Week High': info.get('fiftyTwoWeekHigh'),
-        'Price to Sales Trailing 12 Months': info.get('priceToSalesTrailing12Months'),
-        'Fifty Day Average': info.get('fiftyDayAverage'),
-        'Two Hundred Day Average': info.get('twoHundredDayAverage'),
-        'Currency': info.get('currency'),
+'Volume': info.get('volume'),
+'Regular Market Volume': info.get('regularMarketVolume'),
+'Average Volume': info.get('averageVolume'),
+'Average Volume 10 Days': info.get('averageVolume10days'),
+'Average Daily Volume 10 Day': info.get('averageDailyVolume10Day'),
+'Bid': info.get('bid'),
+'Ask': info.get('ask'),
+'Bid Size': info.get('bidSize'),
+'Ask Size': info.get('askSize'),
 
-        'Float Shares': info.get('floatShares'),
-        'Shares Outstanding': info.get('sharesOutstanding'),
-        'Shares Short': info.get('sharesShort'),
-        'Shares Short Prior Month': info.get('sharesShortPriorMonth'),
+'Fifty-Two Week Low': info.get('fiftyTwoWeekLow'),
+'Fifty-Two Week High': info.get('fiftyTwoWeekHigh'),
+'Price to Sales Trailing 12 Months': info.get('priceToSalesTrailing12Months'),
+'Fifty Day Average': info.get('fiftyDayAverage'),
+'Two Hundred Day Average': info.get('twoHundredDayAverage'),
+'Currency': info.get('currency'),
+
+'Float Shares': info.get('floatShares'),
+'Shares Outstanding': info.get('sharesOutstanding'),
+'Shares Short': info.get('sharesShort'),
+'Shares Short Prior Month': info.get('sharesShortPriorMonth'),
 'Shares Short Previous Month Date': info.get('sharesShortPreviousMonthDate'),
 'Date Short Interest': info.get('dateShortInterest'),
 'Shares Percent Shares Out': info.get('sharesPercentSharesOut'),
@@ -376,9 +378,14 @@ def analyze_stock(ticker):
 'Operating Margins': info.get('operatingMargins'),
 'Financial Currency': info.get('financialCurrency')
 
-       
-  
     }
+
+
+
+ 
+
+       
+
 
     
     return analysis
