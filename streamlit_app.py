@@ -476,7 +476,7 @@ if st.sidebar.button("Analyze Stock"):
             'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share','Gross Profits'],
             'Financial Health': ['Total Debt (Million $)', 'Debt to Equity Ratio', 'Current Ratio'],
-            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)''Free Cash Flow'],
+            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)', 'Free Cash Flow'],
         }
         
         for group_name, ratios in grouped_ratios.items():
