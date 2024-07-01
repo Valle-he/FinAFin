@@ -282,7 +282,7 @@ def analyze_stock(ticker):
         'Historical Expected Return': historical_expected_return,
         'Historical Prices': hist,
     
-        'Audit Risk': info.get('auditRisk'),
+'Audit Risk': info.get('auditRisk'),
 'Board Risk': info.get('boardRisk'),
 'Compensation Risk': info.get('compensationRisk'),
 'Shareholder Rights Risk': info.get('shareHolderRightsRisk'),
@@ -297,6 +297,8 @@ def analyze_stock(ticker):
 'Regular Market Open': info.get('regularMarketOpen'),
 'Regular Market Day Low': info.get('regularMarketDayLow'),
 'Regular Market Day High': info.get('regularMarketDayHigh'),
+
+
 
 'Ex-Dividend Date': info.get('exDividendDate'),
 'Five Year Average Dividend Yield': info.get('fiveYearAvgDividendYield'),
@@ -330,10 +332,10 @@ def analyze_stock(ticker):
 'Short Ratio': info.get('shortRatio'),
 'Short Percent of Float': info.get('shortPercentOfFloat'),
 'Implied Shares Outstanding': info.get('impliedSharesOutstanding'),
-'Book Value': info.get('bookValue'),
-'Price to Book': info.get('priceToBook'),
 
-'Net Income to Common': info.get('netIncomeToCommon'),
+'Book Value': info.get('bookValue'),
+
+
 'Trailing EPS': info.get('trailingEps'),
 'Forward EPS': info.get('forwardEps'),
 'PEG Ratio': info.get('pegRatio'),
@@ -347,16 +349,7 @@ def analyze_stock(ticker):
 'Last Dividend Date': info.get('lastDividendDate'),
 'Exchange': info.get('exchange'),
 
-'Symbol': info.get('symbol'),
-'Underlying Symbol': info.get('underlyingSymbol'),
-'Short Name': info.get('shortName'),
-'Long Name': info.get('longName'),
-'First Trade Date Epoch UTC': info.get('firstTradeDateEpochUtc'),
-'Time Zone Full Name': info.get('timeZoneFullName'),
-'Time Zone Short Name': info.get('timeZoneShortName'),
-'UUID': info.get('uuid'),
-'Message Board ID': info.get('messageBoardId'),
-'GMT Offset Milliseconds': info.get('gmtOffSetMilliseconds'),
+
 'Current Price': info.get('currentPrice'),
 'Target High Price': info.get('targetHighPrice'),
 'Target Low Price': info.get('targetLowPrice'),
@@ -368,24 +361,17 @@ def analyze_stock(ticker):
 
 'Total Cash Per Share': info.get('totalCashPerShare'),
 'EBITDA': info.get('ebitda'),
-'Total Debt': info.get('totalDebt'),
-'Quick Ratio': info.get('quickRatio'),
+
+
 
 'Total Revenue': info.get('totalRevenue'),
 'Free Cashflow': info.get('freeCashflow'),
 
 'EBITDA Margins': info.get('ebitdaMargins'),
 'Operating Margins': info.get('operatingMargins'),
-'Financial Currency': info.get('financialCurrency')
+
 
     }
-
-
-
- 
-
-       
-
 
     
     return analysis
@@ -476,20 +462,22 @@ if st.sidebar.button("Analyze Stock"):
         # Sort and group ratios by type
         grouped_ratios = {
             
-    'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio', 'Dividend Yield', 'Trailing Eps', 'Target Price'],
-    'Company Information': ['Sector', 'Industry', 'Full Time Employees', 'City', 'State', 'Country', 'Website'],
-    'Market Cap and Enterprise Value': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA'],
-    'Profitability Ratios': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
-    'Return Ratios': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
-    'Financial Health Ratios': ['Revenue Growth', 'Payout Ratio', 'Debt to Equity Ratio', 'Current Ratio', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
-    'Risk Metrics': ['Volatility', 'Max Drawdown', 'Beta', 'Market Correlation', 'Cost of Equity', 'Peter Lynch Score', 'Graham Valuation', 'Formula Valuation', 'Expected Return (Fundamental)', 'Historical Expected Return', 'Historical Prices', 'Audit Risk', 'Board Risk', 'Compensation Risk', 'Shareholder Rights Risk', 'Overall Risk'],
-    'Stock Information': ['Previous Close', 'Open', 'Day Low', 'Day High', 'Regular Market Previous Close', 'Regular Market Open', 'Regular Market Day Low', 'Regular Market Day High', 'Ex-Dividend Date', 'Five Year Average Dividend Yield', 'Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Price to Sales Trailing 12 Months', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
-    'Share Statistics': ['Float Shares', 'Shares Outstanding', 'Shares Short', 'Shares Short Prior Month', 'Shares Short Previous Month Date', 'Date Short Interest', 'Shares Percent Shares Out', 'Held Percent Insiders', 'Held Percent Institutions', 'Short Ratio', 'Short Percent of Float', 'Implied Shares Outstanding'],
-    'Dividend and Split Information': ['Last Dividend Value', 'Last Dividend Date', 'Exchange', 'Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions'],
-    'Financial Statements': ['Total Cash Per Share', 'EBITDA', 'Total Debt', 'Quick Ratio', 'Total Revenue', 'Free Cashflow'],
-    'Other Financial Metrics': ['EBITDA Margins', 'Operating Margins', 'Financial Currency']
+            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio','Book Value','PEG Ratio'],
+            'Financial Ratios': ['Dividend Yield', 'Trailing Eps','Forward EPS', 'Payout Ratio'],
+            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
+            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
+            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share','EBITDA'],
+            'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
+            'Cashflow Metrics': ['Total Cash (Million $)','Total Cash per Share', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)','Free Cash Flow'],
+            'Risk Metrics': ['Audit Risk', 'Board Risk', 'Compensation Risk', 'Shareholder Rights Risk', 'Overall Risk'],
+            'Price Analyses': ['Price Hint', 'Previous Close', 'Open', 'Day Low', 'Day High', 'Regular Market Previous Close', 'Regular Market Open', 'Regular Market Day Low', 'Regular Market Day High'],
+            'Dividend Ratios': ['Ex-Dividend Date', 'Five Year Average Dividend Yield', 'Last Dividend Value', 'Last Dividend Date'],
+            'Trading and Technical Analyses': ['Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Price to Sales Trailing 12 Months', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
+           'Share Metrics': ['Float Shares', 'Shares Outstanding', 'Shares Short', 'Shares Short Prior Month', 'Shares Short Previous Month Date', 'Date Short Interest', 'Shares Percent Shares Out', 'Held Percent Insiders', 'Held Percent Institutions', 'Short Ratio', 'Short Percent of Float', 'Implied Shares Outstanding'],
+           'Price Forecasts': ['Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions']
+           }  
 
-        }
+
         
         for group_name, ratios in grouped_ratios.items():
             st.subheader(group_name)
