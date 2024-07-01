@@ -346,6 +346,9 @@ st.title('Stock and Portfolio Analysis')
 # Sidebar for Stock Analysis Input
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
+if not ticker.isalpha():
+    st.error("Invalid ticker symbol. Please enter a valid stock ticker.")
+
 
 if st.sidebar.button("Analyze Stock"):
     # Analyze stock
