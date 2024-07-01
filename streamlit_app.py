@@ -613,7 +613,7 @@ def get_portfolio_data():
         st.write(f"**Current Portfolio Volatility:** {current_volatility * 100:.2f}%")
         st.write(f"**Average Portfolio Volatility:** {average_volatility * 100:.2f}%")
         st.write(f"**Portfolio Sharpe Ratio:** {sharpe_ratio:.2f}")
-        st.write(f"**Expected Return:** {expected_return * 100:.2f}%")
+        st.write(f"**Expected Return (p.a.):** {expected_return * 100:.2f}%")
 
         # Grafiken anzeigen
         st.header("Portfolio Performance Charts")
