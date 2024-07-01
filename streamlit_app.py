@@ -475,15 +475,20 @@ if st.sidebar.button("Analyze Stock"):
         
         # Sort and group ratios by type
         grouped_ratios = {
-           
-            'Company Information':['Sector','Idustry','Full Time Employees','City','State','Country','Website'],
-            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio'],
-            'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
-            'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
-            'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
-            'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share','Gross Profits'],
-            'Financial Health': ['Total Debt (Million $)', 'Debt to Equity Ratio', 'Current Ratio'],
-            'Cashflow Metrics': ['Total Cash (Million $)', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)', 'Free Cash Flow'],
+            
+    'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio', 'Dividend Yield', 'Trailing Eps', 'Target Price'],
+    'Company Information': ['Sector', 'Industry', 'Full Time Employees', 'City', 'State', 'Country', 'Website'],
+    'Market Cap and Enterprise Value': ['Market Cap (Billion $)', 'Enterprise Value (Billion $)', 'Enterprise to Revenue', 'Enterprise to EBITDA'],
+    'Profitability Ratios': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
+    'Return Ratios': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
+    'Financial Health Ratios': ['Revenue Growth', 'Payout Ratio', 'Debt to Equity Ratio', 'Current Ratio', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)'],
+    'Risk Metrics': ['Volatility', 'Max Drawdown', 'Beta', 'Market Correlation', 'Cost of Equity', 'Peter Lynch Score', 'Graham Valuation', 'Formula Valuation', 'Expected Return (Fundamental)', 'Historical Expected Return', 'Historical Prices', 'Audit Risk', 'Board Risk', 'Compensation Risk', 'Shareholder Rights Risk', 'Overall Risk'],
+    'Stock Information': ['Previous Close', 'Open', 'Day Low', 'Day High', 'Regular Market Previous Close', 'Regular Market Open', 'Regular Market Day Low', 'Regular Market Day High', 'Ex-Dividend Date', 'Five Year Average Dividend Yield', 'Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Price to Sales Trailing 12 Months', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
+    'Share Statistics': ['Float Shares', 'Shares Outstanding', 'Shares Short', 'Shares Short Prior Month', 'Shares Short Previous Month Date', 'Date Short Interest', 'Shares Percent Shares Out', 'Held Percent Insiders', 'Held Percent Institutions', 'Short Ratio', 'Short Percent of Float', 'Implied Shares Outstanding'],
+    'Dividend and Split Information': ['Last Dividend Value', 'Last Dividend Date', 'Exchange', 'Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions'],
+    'Financial Statements': ['Total Cash Per Share', 'EBITDA', 'Total Debt', 'Quick Ratio', 'Total Revenue', 'Free Cashflow'],
+    'Other Financial Metrics': ['EBITDA Margins', 'Operating Margins', 'Financial Currency']
+
         }
         
         for group_name, ratios in grouped_ratios.items():
