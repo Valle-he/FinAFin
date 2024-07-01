@@ -518,6 +518,7 @@ if st.sidebar.button("Analyze Stock"):
             st.error(f"Error fetching news data: {str(e)}")
 
 # Sidebar for Portfolio Optimization Input
+# Sidebar for Portfolio Optimization Input
 st.sidebar.header('Portfolio Optimization Input')
 tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
 tickers = [ticker.strip() for ticker in tickers_input.split(',')]
@@ -530,6 +531,8 @@ if st.sidebar.button("Optimize Portfolio"):
         st.error("Please enter at least one valid stock ticker.")
     elif min_weight > max_weight:
         st.error("Minimum weight should be less than or equal to maximum weight.")
+    elif min_weight > (100 / len(tickers)):
+        st.error(f"Minimum weight should be less than or equal to {100 / len(tickers):.2f}% (1/number of stocks).")
     else:
         try:
             optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
@@ -553,6 +556,7 @@ if st.sidebar.button("Optimize Portfolio"):
                 st.line_chart(optimized_portfolio_prices)
         except Exception as e:
             st.error(f"Error optimizing portfolio: {str(e)}")
+
 
 
 
