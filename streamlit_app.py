@@ -518,19 +518,11 @@ if st.sidebar.button("Analyze Stock"):
             st.error(f"Error fetching news data: {str(e)}")
 
 # Sidebar for Portfolio Optimization Input
-# Sidebar for Portfolio Optimization Input
 st.sidebar.header('Portfolio Optimization Input')
 tickers_input = st.sidebar.text_input("Enter the stock tickers separated by commas (e.g., AAPL,GME,SAP,TSLA):", "AAPL,GME,SAP,TSLA")
 tickers = [ticker.strip() for ticker in tickers_input.split(',')]
 
-# Berechne die maximal mögliche Mindestgewichtung basierend auf der Anzahl der Aktien
-if len(tickers) > 0:
-    max_min_weight = 1 / len(tickers)
-else:
-    max_min_weight = 1  # Fallback, wenn keine Aktien eingegeben sind
-
-# Setze den maximalen Wert des Sliders für die Mindestgewichtung auf den berechneten Wert
-min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=int(max_min_weight * 100), value=5)
+min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100, value=5)
 max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
 
 if st.sidebar.button("Optimize Portfolio"):
@@ -540,7 +532,7 @@ if st.sidebar.button("Optimize Portfolio"):
         st.error("Minimum weight should be less than or equal to maximum weight.")
     else:
         try:
-            optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight / 100, max_weight / 100)
+            optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
             if optimal_weights is None:
                 st.error("Error optimizing portfolio.")
             else:
@@ -561,6 +553,7 @@ if st.sidebar.button("Optimize Portfolio"):
                 st.line_chart(optimized_portfolio_prices)
         except Exception as e:
             st.error(f"Error optimizing portfolio: {str(e)}")
+
 
 
 
