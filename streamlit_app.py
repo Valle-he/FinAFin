@@ -347,7 +347,7 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 st.title('Stock and Portfolio Analysis')
 
 # Sidebar for Stock Analysis Input
-st.sidebar.header('Stock and Portfolio Analysis')
+st.sidebar.title('Stock and Portfolio Analysis')
 
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
