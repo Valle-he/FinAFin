@@ -459,7 +459,7 @@ if st.sidebar.button("Analyze Stock"):
             if 'Error' in result:
                 st.error(result['Error'])
             else:
-                st.subheader(f'Stock Analysis Results for {ticker}')
+                st.header(f'Stock Analysis Results for {ticker}')
                 st.subheader("Summary")
                 st.markdown("---")
                 # Sort and group ratios by type, display analysis...
