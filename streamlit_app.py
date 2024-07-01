@@ -286,22 +286,25 @@ def analyze_stock(ticker):
 
 # Function for portfolio optimization
 def optimize_portfolio(tickers, min_weight, max_weight):
+    # Define date range
     end_date = datetime.today()
     start_date = end_date - timedelta(days=5*365)
 
+    # Create dataframe for adjusted closing prices
     adj_close_df = pd.DataFrame()
 
     for ticker in tickers:
-        try:
-            data = yf.download(ticker, start=start_date, end=end_date)
-            adj_close_df[ticker] = data['Adj Close']
-        except Exception as e:
-            st.error(f"Error downloading data for {ticker}: {str(e)}")
-            return None, None, None, None, None
+        data = yf.download(ticker, start=start_date, end=end_date)
+        adj_close_df[ticker] = data['Adj Close']
 
-    log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
+    # Calculate log returns
+    log_returns = np.log(adj_close_df / adj_close_df.shift(1))
+    log_returns = log_returns.dropna()
+
+    # Calculate covariance matrix
     cov_matrix = log_returns.cov() * 252
 
+    # Functions for standard deviation, expected return, and Sharpe ratio
     def standard_deviation(weights, cov_matrix):
         variance = weights.T @ cov_matrix @ weights
         return np.sqrt(variance)
@@ -312,59 +315,55 @@ def optimize_portfolio(tickers, min_weight, max_weight):
     def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
         return (expected_return(weights, log_returns) - risk_free_rate) / standard_deviation(weights, cov_matrix)
 
-    try:
-        fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
-        ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
-        risk_free_rate = ten_year_treasury_rate.iloc[-1]
-    except Exception as e:
-        st.error(f"Error fetching risk-free rate: {str(e)}")
-        return None, None, None, None, None
+    # Use FRED API to get current 10-year Treasury rate
+    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+    risk_free_rate = ten_year_treasury_rate.iloc[-1]
 
+    # Optimize Sharpe ratio using an iterative approach
     num_assets = len(tickers)
-    results = np.zeros((3, 10000))
-    weight_array = np.zeros((10000, num_assets))
+    num_portfolios = 10000
+    results = np.zeros((3, num_portfolios))
+    weight_array = np.zeros((num_portfolios, num_assets))
 
     def objective(weights):
         return -sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
 
-    constraints = {'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1}
+    constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
+
+    # Set boundaries for weights
     bounds = [(min_weight / 100, max_weight / 100)] * num_assets
 
-    try:
-        optimized = minimize(objective, num_assets * [1. / num_assets], method='SLSQP', bounds=bounds, constraints=constraints)
-        optimal_weights = optimized['x']
-        optimal_portfolio_return = expected_return(optimal_weights, log_returns)
-        optimal_portfolio_volatility = standard_deviation(optimal_weights, cov_matrix)
-        optimal_sharpe_ratio = sharpe_ratio(optimal_weights, log_returns, cov_matrix, risk_free_rate)
-    except Exception as e:
-        st.error(f"Error optimizing portfolio: {str(e)}")
-        return None, None, None, None, None
+    for i in range(num_portfolios):
+        weights = np.random.random(num_assets)
+        weights /= np.sum(weights)
+        weight_array[i, :] = weights
+
+    optimized = minimize(objective, num_assets * [1. / num_assets,], method='SLSQP', bounds=bounds, constraints=constraints)
+
+    optimal_weights = optimized['x']
+    optimal_portfolio_return = expected_return(optimal_weights, log_returns)
+    optimal_portfolio_volatility = standard_deviation(optimal_weights, cov_matrix)
+    optimal_sharpe_ratio = sharpe_ratio(optimal_weights, log_returns, cov_matrix, risk_free_rate)
 
     return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
-
 
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
 
 # Sidebar for Stock Analysis Input
-st.title('Stock and Portfolio Analysis')
-
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 if not ticker.isalpha():
     st.error("Invalid ticker symbol. Please enter a valid stock ticker.")
 
+
 if st.sidebar.button("Analyze Stock"):
+    # Analyze stock
     if ticker:
-        try:
-            result = analyze_stock(ticker)
-            if 'Error' in result:
-                st.error(result['Error'])
-            else:
-                st.subheader(f'Stock Analysis Results for {ticker}')
-                # Sort and group ratios by type, display analysis...
-        except Exception as e:
-            st.error(f"Error analyzing stock: {str(e)}")
+        result = analyze_stock(ticker)
+        
+        st.subheader(f'Stock Analysis Results for {ticker}')
         
         # Sort and group ratios by type
         grouped_ratios = {
@@ -524,28 +523,28 @@ if st.sidebar.button("Optimize Portfolio"):
     elif min_weight > max_weight:
         st.error("Minimum weight should be less than or equal to maximum weight.")
     else:
-        try:
-            optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
-            if optimal_weights is None:
-                st.error("Error optimizing portfolio.")
-            else:
-                st.subheader("Optimal Portfolio Metrics:")
-                st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
-                st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
-                st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
+        optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
+        # Display results...
 
-                st.subheader("Optimal Weights:")
-                optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
-                st.write(optimal_weights_df)
+    
+    st.subheader("Optimal Portfolio Metrics:")
+    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
+    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
+    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
 
-                fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
-                st.plotly_chart(fig)
+    st.subheader("Optimal Weights:")
+    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
+    st.write(optimal_weights_df)
 
-                st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
-                optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-                st.line_chart(optimized_portfolio_prices)
-        except Exception as e:
-            st.error(f"Error optimizing portfolio: {str(e)}")
+    # Plot Portfolio Allocation
+    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
+    st.plotly_chart(fig)
+
+    # Display current and historical closing prices for optimized portfolio
+    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
+    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
+    st.line_chart(optimized_portfolio_prices)
+
 
 
 
