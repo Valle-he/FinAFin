@@ -347,18 +347,24 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 st.title('Stock and Portfolio Analysis')
 
 # Sidebar for Stock Analysis Input
+st.title('Stock and Portfolio Analysis')
+
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
 if not ticker.isalpha():
     st.error("Invalid ticker symbol. Please enter a valid stock ticker.")
 
-
 if st.sidebar.button("Analyze Stock"):
-    # Analyze stock
     if ticker:
-        result = analyze_stock(ticker)
-        
-        st.subheader(f'Stock Analysis Results for {ticker}')
+        try:
+            result = analyze_stock(ticker)
+            if 'Error' in result:
+                st.error(result['Error'])
+            else:
+                st.subheader(f'Stock Analysis Results for {ticker}')
+                # Sort and group ratios by type, display analysis...
+        except Exception as e:
+            st.error(f"Error analyzing stock: {str(e)}")
         
         # Sort and group ratios by type
         grouped_ratios = {
