@@ -282,6 +282,10 @@ def analyze_stock(ticker):
         'Historical Expected Return': historical_expected_return,
         'Historical Prices': hist,
         'Quick Ratio': info.get('quickRatio'),
+        'Total Revenue per Share': info.get('totalRevenuePerShare'),
+        'Total Cash Per Share': info.get('totalCashPerShare'),
+        'Free Cashflow': info.get('freeCashflow'),
+        
     
 'Audit Risk': info.get('auditRisk'),
 'Board Risk': info.get('boardRisk'),
