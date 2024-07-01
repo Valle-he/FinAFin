@@ -315,7 +315,7 @@ def analyze_stock(ticker):
 
 'Fifty-Two Week Low': info.get('fiftyTwoWeekLow'),
 'Fifty-Two Week High': info.get('fiftyTwoWeekHigh'),
-'Price to Sales Trailing 12 Months': info.get('priceToSalesTrailing12Months'),
+'P/S Ratio Trailing 12 Months': info.get('priceToSalesTrailing12Months'),
 'Fifty Day Average': info.get('fiftyDayAverage'),
 'Two Hundred Day Average': info.get('twoHundredDayAverage'),
 'Currency': info.get('currency'),
@@ -463,7 +463,7 @@ if st.sidebar.button("Analyze Stock"):
         grouped_ratios = {
             
             'Company Information':['Sector','Industry','Full Time Employees','City','State','Country','Website'],
-            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio','Book Value','PEG Ratio'],
+            'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio','P/S Ratio Trailing 12 Months', 'P/B Ratio','Book Value','PEG Ratio'],
             'Financial Ratios': ['Dividend Yield', 'Trailing Eps','Forward EPS', 'Payout Ratio'],
             'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
             'Financial Metrics': ['Return on Assets (ROA)', 'Return on Equity (ROE)'],
@@ -478,7 +478,7 @@ if st.sidebar.button("Analyze Stock"):
             'Fair Value Metrics':['Peter Lynch Score','Graham Valuation','Formula Valuation','Expected Return (Fundamental)','Historical Expected Return'],
             'Price Forecasts': ['Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions'],
             'Price Analyses': ['Price Hint', 'Previous Close', 'Open', 'Day Low', 'Day High', 'Regular Market Previous Close', 'Regular Market Open', 'Regular Market Day Low', 'Regular Market Day High'],
-            'Trading and Technical Analyses': ['Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Price to Sales Trailing 12 Months', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
+            'Trading and Technical Analyses': ['Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
            
             
            }  
