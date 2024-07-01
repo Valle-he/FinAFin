@@ -518,27 +518,28 @@ if st.sidebar.button("Optimize Portfolio"):
     elif min_weight > max_weight:
         st.error("Minimum weight should be less than or equal to maximum weight.")
     else:
-        optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
-        # Display results...
+        try:
+            optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
+            if optimal_weights is None:
+                st.error("Error optimizing portfolio.")
+            else:
+                st.subheader("Optimal Portfolio Metrics:")
+                st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
+                st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
+                st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
 
-    
-    st.subheader("Optimal Portfolio Metrics:")
-    st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
-    st.write(f"Expected Portfolio Volatility: {optimal_portfolio_volatility:.4f}")
-    st.write(f"Sharpe Ratio: {optimal_sharpe_ratio:.4f}")
+                st.subheader("Optimal Weights:")
+                optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
+                st.write(optimal_weights_df)
 
-    st.subheader("Optimal Weights:")
-    optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
-    st.write(optimal_weights_df)
+                fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
+                st.plotly_chart(fig)
 
-    # Plot Portfolio Allocation
-    fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Portfolio Allocation')
-    st.plotly_chart(fig)
-
-    # Display current and historical closing prices for optimized portfolio
-    st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
-    optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
-    st.line_chart(optimized_portfolio_prices)
+                st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
+                optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
+                st.line_chart(optimized_portfolio_prices)
+        except Exception as e:
+            st.error(f"Error optimizing portfolio: {str(e)}")
 
 
 
