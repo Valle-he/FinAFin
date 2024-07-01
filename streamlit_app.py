@@ -469,12 +469,14 @@ if st.sidebar.button("Analyze Stock"):
             'Revenue Metrics': ['Revenue Growth', 'Total Revenue (Million $)', 'Total Revenue per Share','EBITDA'],
             'Financial Health': ['Debt to Equity Ratio', 'Current Ratio'],
             'Cashflow Metrics': ['Total Cash (Million $)','Total Cash per Share', 'Operating Cashflow (Million $)', 'Levered Free Cashflow (Million $)','Free Cash Flow'],
+            'Dividend Ratios': ['Ex-Dividend Date', 'Five Year Average Dividend Yield', 'Last Dividend Value', 'Last Dividend Date'],
+            'Market Metrics':['Market Cap (Billion $)','Enterprise Value (Billion $)','Enterprise to Revenue','Enterprise to EBITDA','Cost of Equity'],
             'Risk Metrics': ['Audit Risk', 'Board Risk', 'Compensation Risk', 'Shareholder Rights Risk', 'Overall Risk'],
             'Price Analyses': ['Price Hint', 'Previous Close', 'Open', 'Day Low', 'Day High', 'Regular Market Previous Close', 'Regular Market Open', 'Regular Market Day Low', 'Regular Market Day High'],
-            'Dividend Ratios': ['Ex-Dividend Date', 'Five Year Average Dividend Yield', 'Last Dividend Value', 'Last Dividend Date'],
+            'Price Forecasts': ['Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions'],
             'Trading and Technical Analyses': ['Volume', 'Regular Market Volume', 'Average Volume', 'Average Volume 10 Days', 'Average Daily Volume 10 Day', 'Bid', 'Ask', 'Bid Size', 'Ask Size', 'Fifty-Two Week Low', 'Fifty-Two Week High', 'Price to Sales Trailing 12 Months', 'Fifty Day Average', 'Two Hundred Day Average', 'Currency'],
-           'Share Metrics': ['Float Shares', 'Shares Outstanding', 'Shares Short', 'Shares Short Prior Month', 'Shares Short Previous Month Date', 'Date Short Interest', 'Shares Percent Shares Out', 'Held Percent Insiders', 'Held Percent Institutions', 'Short Ratio', 'Short Percent of Float', 'Implied Shares Outstanding'],
-           'Price Forecasts': ['Current Price', 'Target High Price', 'Target Low Price', 'Target Mean Price', 'Target Median Price', 'Recommendation Mean', 'Recommendation Key', 'Number of Analyst Opinions']
+            'Share Metrics': ['Float Shares', 'Shares Outstanding', 'Shares Short', 'Shares Short Prior Month', 'Shares Short Previous Month Date', 'Date Short Interest', 'Shares Percent Shares Out', 'Held Percent Insiders', 'Held Percent Institutions', 'Short Ratio', 'Short Percent of Float', 'Implied Shares Outstanding'],
+            
            }  
 
 
