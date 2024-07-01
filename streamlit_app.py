@@ -510,7 +510,14 @@ min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100,
 max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
 
 if st.sidebar.button("Optimize Portfolio"):
-    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
+    if not tickers:
+        st.error("Please enter at least one valid stock ticker.")
+    elif min_weight > max_weight:
+        st.error("Minimum weight should be less than or equal to maximum weight.")
+    else:
+        optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
+        # Display results...
+
     
     st.subheader("Optimal Portfolio Metrics:")
     st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
