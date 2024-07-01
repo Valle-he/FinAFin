@@ -18,10 +18,12 @@ def get_dividend_yield(ticker):
         stock = yf.Ticker(ticker)
         dividend_yield = stock.info.get('dividendYield', None)
         if dividend_yield is None:
-            raise ValueError(f"No dividend yield available for {ticker}")
+            st.warning(f"No dividend yield available for {ticker}")
+            return None
         return dividend_yield
     except Exception as e:
-        raise ValueError(f"Error fetching dividend yield for {ticker}: {str(e)}")
+        st.error(f"Error fetching dividend yield for {ticker}: {str(e)}")
+        return None
 
 
 # Funktion zur Berechnung des Peter Lynch Valuation Scores
