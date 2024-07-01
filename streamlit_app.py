@@ -14,15 +14,9 @@ alpha_vantage_api_key = '7ULSSVM1DNTM3E4C'
 
 # Funktion zur Berechnung der aktuellen Dividendenrendite
 def get_dividend_yield(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        dividend_yield = stock.info.get('dividendYield', None)
-        if dividend_yield is None:
-            raise ValueError(f"No dividend yield available for {ticker}")
-        return dividend_yield
-    except Exception as e:
-        raise ValueError(f"Error fetching dividend yield for {ticker}: {str(e)}")
-
+    stock = yf.Ticker(ticker)
+    dividend_yield = stock.info.get('dividendYield', None)
+    return dividend_yield
 
 # Funktion zur Berechnung des Peter Lynch Valuation Scores
 def calculate_peter_lynch_score(ticker, growth_rate):
@@ -54,11 +48,9 @@ def calculate_graham_valuation(ticker, growth_rate):
         return None  # Wenn EPS nicht verfügbar, kein Fair Value berechnen
     
     # Risk-Free Rate über FRED API abrufen
-# Risk-Free Rate über FRED API abrufen
     fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
-
     
     # Fair Value nach Graham Formel berechnen
     graham_valuation = (eps * (8.5 + (2 * growth_rate) * 100) * 4.4) / (risk_free_rate * 100)
@@ -137,12 +129,7 @@ def calculate_expected_return_historical(ticker):
 def get_news_data(ticker):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={alpha_vantage_api_key}'
     response = requests.get(url)
-    try:
-        response.raise_for_status()
-        news_data = response.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error fetching news data: {str(e)}")
-        return []
+    news_data = response.json()
     articles = news_data.get('feed', [])
     news_list = []
     for article in articles:
@@ -151,7 +138,6 @@ def get_news_data(ticker):
         description = article['summary']
         news_list.append([published_at, title, description])
     return news_list
-
 
 # Function to analyze sentiment using TextBlob
 def analyze_sentiment(news_data):
@@ -213,15 +199,9 @@ def analyze_stock(ticker):
         return cost_of_equity
 
     # Use FRED API to get current 10-year Treasury rate
-    def get_treasury_rate():
-        try:
-            fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
-            ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
-            return ten_year_treasury_rate.iloc[-1]
-        except Exception as e:
-            st.error(f"Error fetching treasury rate: {str(e)}")
-            return None
-
+    fred = Fred(api_key='2bbf1ed4d0b03ad1f325efaa03312596')
+    ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
+    risk_free_rate = ten_year_treasury_rate.iloc[-1]
 
     # Calculate average market return (you may need to adjust this calculation based on your data)
     # Example: Using S&P 500 index return as average market return
@@ -360,9 +340,6 @@ st.title('Stock and Portfolio Analysis')
 # Sidebar for Stock Analysis Input
 st.sidebar.header('Stock Analysis Input')
 ticker = st.sidebar.text_input('Enter the stock ticker:', 'AAPL')
-if not ticker.isalpha():
-    st.error("Invalid ticker symbol. Please enter a valid stock ticker.")
-
 
 if st.sidebar.button("Analyze Stock"):
     # Analyze stock
@@ -524,14 +501,7 @@ min_weight = st.sidebar.slider('Minimum Weight (%)', min_value=0, max_value=100,
 max_weight = st.sidebar.slider('Maximum Weight (%)', min_value=0, max_value=100, value=30)
 
 if st.sidebar.button("Optimize Portfolio"):
-    if not tickers:
-        st.error("Please enter at least one valid stock ticker.")
-    elif min_weight > max_weight:
-        st.error("Minimum weight should be less than or equal to maximum weight.")
-    else:
-        optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
-        # Display results...
-
+    optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df = optimize_portfolio(tickers, min_weight, max_weight)
     
     st.subheader("Optimal Portfolio Metrics:")
     st.write(f"Expected Annual Return: {optimal_portfolio_return:.4f}")
