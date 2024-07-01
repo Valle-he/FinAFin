@@ -162,6 +162,7 @@ def analyze_sentiment(news_data):
         sentiments.append(sentiment_score)
     return sentiments
 
+
 # Function to fetch stock data from Yahoo Finance
 def fetch_stock_data(ticker):
     stock = yf.Ticker(ticker)
@@ -368,6 +369,8 @@ if st.sidebar.button("Analyze Stock"):
         
         # Sort and group ratios by type
         grouped_ratios = {
+           
+            'Company Information':['Sector','Idustry','Full Time Employees','City','State','Country','Website'],
             'Valuation Ratios': ['P/E Ratio', 'Forward P/E', 'P/S Ratio', 'P/B Ratio'],
             'Financial Ratios': ['Dividend Yield', 'Trailing Eps', 'Payout Ratio'],
             'Profitability Margins': ['Profit Margins', 'Gross Margins', 'EBITDA Margins', 'Operating Margins'],
