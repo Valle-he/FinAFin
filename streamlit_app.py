@@ -561,12 +561,14 @@ if st.sidebar.button("Optimize Portfolio"):
                 optimal_weights_df = pd.DataFrame(optimal_weights, index=tickers, columns=["Weight"])
                 st.write(optimal_weights_df)
 
-                fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Asset Allocation')
-                st.plotly_chart(fig)
-
                 st.subheader('Current and Historical Closing Prices for Optimized Portfolio')
                 optimized_portfolio_prices = (adj_close_df * optimal_weights).sum(axis=1)
                 st.line_chart(optimized_portfolio_prices)
+
+                fig = px.pie(optimal_weights_df, values='Weight', names=optimal_weights_df.index, title='Asset Allocation')
+                st.plotly_chart(fig)
+
+                
         except Exception as e:
             st.error(f"Error optimizing portfolio: {str(e)}")
 
