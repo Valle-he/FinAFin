@@ -285,7 +285,7 @@ def analyze_stock(ticker):
         'Total Revenue per Share': info.get('totalRevenuePerShare'),
         'Total Cash Per Share': info.get('totalCashPerShare'),
         'Free Cashflow': info.get('freeCashflow'),
-        
+
     
 'Audit Risk': info.get('auditRisk'),
 'Board Risk': info.get('boardRisk'),
@@ -439,6 +439,7 @@ def optimize_portfolio(tickers, min_weight, max_weight):
 
     return optimal_weights, optimal_portfolio_return, optimal_portfolio_volatility, optimal_sharpe_ratio, adj_close_df
 
+    
 
 # Streamlit App
 st.title('Stock and Portfolio Analysis')
@@ -529,6 +530,72 @@ if st.sidebar.button("Analyze Stock"):
 
         except Exception as e:
             st.error(f"Error fetching news data: {str(e)}")
+            
+# Sidebar for Portfolio Tracker Input
+st.sidebar.header('Portfolio Tracker Input')
+
+# Initialize lists to store user inputs
+ticker_inputs = []
+date_inputs = []
+investment_amount_inputs = []
+
+add_more = st.sidebar.button('Add Investment')
+if add_more:
+    ticker_input = st.sidebar.text_input('Enter Ticker:', '')
+    date_input = st.sidebar.date_input('Enter Investment Date:', datetime.today())
+    investment_amount_input = st.sidebar.number_input('Enter Investment Amount:', min_value=0.01, step=0.01, format="%.2f")
+    
+    if ticker_input and date_input and investment_amount_input:
+        ticker_inputs.append(ticker_input)
+        date_inputs.append(date_input)
+        investment_amount_inputs.append(investment_amount_input)
+
+calculate_button = st.sidebar.button('Calculate')
+
+# Portfolio Tracker Calculation
+if calculate_button:
+    st.sidebar.subheader('Portfolio Tracker Results')
+    
+    # Calculate total portfolio value
+    total_portfolio_value = 0.0
+    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
+        try:
+            stock = yf.Ticker(ticker)
+            current_price = stock.history(period='1d')['Close'].iloc[-1]
+            days_held = (datetime.today() - investment_date).days
+            investment_value = investment_amount * (1 + current_price / stock.history(period='1d')['Close'].iloc[-days_held])
+            total_portfolio_value += investment_value
+        except Exception as e:
+            st.error(f"Error calculating portfolio value for {ticker}: {str(e)}")
+    
+    # Calculate cumulative weighted return
+    cumulative_weighted_return = 0.0
+    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
+        try:
+            stock = yf.Ticker(ticker)
+            initial_price = stock.history(start=investment_date, end=datetime.today())['Close'].iloc[0]
+            current_price = stock.history(period='1d')['Close'].iloc[-1]
+            days_held = (datetime.today() - investment_date).days
+            investment_return = (current_price - initial_price) / initial_price * investment_amount
+            cumulative_weighted_return += investment_return
+        except Exception as e:
+            st.error(f"Error calculating cumulative weighted return for {ticker}: {str(e)}")
+    
+    # Calculate current weighted portfolio volatility
+    current_portfolio_volatility = 0.0
+    for ticker, investment_date, investment_amount in zip(ticker_inputs, date_inputs, investment_amount_inputs):
+        try:
+            stock = yf.Ticker(ticker)
+            days_held = (datetime.today() - investment_date).days
+            historical_returns = stock.history(start=investment_date, end=datetime.today())['Close'].pct_change().dropna()
+            annualized_volatility = historical_returns.std() * np.sqrt(252)
+            weighted_volatility = annualized_volatility * investment_amount / total_portfolio_value
+            current_portfolio_volatility += weighted_volatility
+        except Exception as e:
+            st.error(f"Error calculating current portfolio volatility for {ticker}: {str(e)}")
+    
+  
+
 
 # Sidebar for Portfolio Optimization Input
 # Sidebar for Portfolio Optimization Input
