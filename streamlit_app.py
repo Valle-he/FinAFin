@@ -627,7 +627,7 @@ def get_portfolio_data():
 
         # Grafiken anzeigen
         st.header("Portfolio Performance Charts")
-        plot_portfolio_performance(portfolio_values, total_investment)
+        plot_portfolio_performance(portfolio_values)
         plot_asset_allocation(portfolio)
 
 # Historische Daten abrufen
@@ -640,7 +640,7 @@ def fetch_historical_data(portfolio):
 
 # Portfolio-Metriken berechnen
 def calculate_portfolio_metrics(portfolio):
-    total_investment = sum(stock['investment_amount'] for stock in portfolio)
+    total_investment = 0
     total_value = 0
     total_unrealized = 0
 
@@ -651,27 +651,25 @@ def calculate_portfolio_metrics(portfolio):
 
     for stock in portfolio:
         initial_price = stock['data']['Adj Close'].iloc[0]
-        current_price = stock['data']['Adj Close'].iloc[-1]
         quantity = stock['investment_amount'] / initial_price
-        current_value = quantity * current_price
-        stock_return = (current_price - initial_price) / initial_price
 
-        unrealized_gain_loss = current_value - stock['investment_amount']
-        stock['current_value'] = current_value
-        stock['unrealized_gain_loss'] = unrealized_gain_loss
-        total_value += current_value
-        total_unrealized += unrealized_gain_loss
-
+        # Berechnung der Position Value
         stock['data']['Position Value'] = stock['data']['Adj Close'] * quantity
-        portfolio_values = portfolio_values.join(stock['data']['Position Value'], how='outer', rsuffix=f"_{stock['ticker']}")
+
+        if portfolio_values.empty:
+            portfolio_values = stock['data'][['Position Value']].copy()
+        else:
+            portfolio_values = portfolio_values.join(stock['data'][['Position Value']], how='outer', rsuffix=f"_{stock['ticker']}")
+
+        total_investment += stock['investment_amount']
+
+    portfolio_values.fillna(method='ffill', inplace=True)
+    portfolio_values.fillna(0, inplace=True)
 
     portfolio_values['Total'] = portfolio_values.sum(axis=1)
-    portfolio_values = portfolio_values.fillna(method='ffill').fillna(0)
 
-    # Sicherstellen, dass die Werte vor der ersten Investition 0 sind
-    for stock in portfolio:
-        portfolio_values.loc[:stock['investment_date'], 'Total'] += stock['investment_amount']
-
+    # Portfoliowert und -metriken berechnen
+    total_value = portfolio_values['Total'].iloc[-1]
     portfolio_return = (total_value - total_investment) / total_investment
     daily_returns = portfolio_values['Total'].pct_change().dropna()
     current_volatility = np.std(daily_returns) * np.sqrt(252)
@@ -684,7 +682,6 @@ def calculate_portfolio_metrics(portfolio):
 
     # Sharpe Ratio berechnen
     tickers = [stock['ticker'] for stock in portfolio]
-    investment_dates = [stock['investment_date'] for stock in portfolio]
     end_date = datetime.today()
     start_date = min(datetime.strptime(stock['investment_date'].strftime('%Y-%m-%d'), "%Y-%m-%d") for stock in portfolio)
 
@@ -716,7 +713,7 @@ def calculate_portfolio_metrics(portfolio):
         return None
 
     num_assets = len(tickers)
-    weights = np.array([stock['current_value'] for stock in portfolio]) / sum([stock['current_value'] for stock in portfolio])
+    weights = np.array([stock['data']['Position Value'].iloc[-1] for stock in portfolio]) / sum([stock['data']['Position Value'].iloc[-1] for stock in portfolio])
 
     portfolio_expected_return = expected_return(weights, log_returns)
     portfolio_sharpe_ratio = sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
@@ -724,9 +721,7 @@ def calculate_portfolio_metrics(portfolio):
     return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, avg_annual_return, portfolio_values, total_investment
 
 # Grafische Darstellung der Portfolio-Performance
-def plot_portfolio_performance(portfolio_values, total_investment):
-    initial_value = total_investment
-    portfolio_values['Total'] += initial_value - portfolio_values['Total'].iloc[0]
+def plot_portfolio_performance(portfolio_values):
     fig = px.line(portfolio_values, y='Total', title='Kumulative Portfolio-Performance')
     fig.update_layout(xaxis_title='Datum', yaxis_title='Gesamtwert')
     st.plotly_chart(fig)
@@ -734,7 +729,7 @@ def plot_portfolio_performance(portfolio_values, total_investment):
 # Grafische Darstellung der Asset-Allokation
 def plot_asset_allocation(portfolio):
     labels = [stock['ticker'] for stock in portfolio]
-    sizes = [stock['current_value'] for stock in portfolio]
+    sizes = [stock['data']['Position Value'].iloc[-1] for stock in portfolio]
 
     fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3)])
     fig.update_layout(title_text='Asset Allocation')
