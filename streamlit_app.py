@@ -627,7 +627,7 @@ def get_portfolio_data():
 
         # Grafiken anzeigen
         st.header("Portfolio Performance Charts")
-        plot_portfolio_performance(portfolio_values)
+        plot_portfolio_performance(portfolio_values, total_investment)
         plot_asset_allocation(portfolio)
 
 # Historische Daten abrufen
@@ -719,7 +719,8 @@ def calculate_portfolio_metrics(portfolio):
     return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, avg_annual_return, portfolio_values
 
 # Grafische Darstellung der Portfolio-Performance
-def plot_portfolio_performance(portfolio_values):
+def plot_portfolio_performance(portfolio_values, total_investment):
+    portfolio_values['Total'] = portfolio_values['Total'] + total_investment - portfolio_values['Total'].iloc[0]
     fig = px.line(portfolio_values, y='Total', title='Kumulative Portfolio-Performance')
     fig.update_layout(xaxis_title='Datum', yaxis_title='Gesamtwert')
     st.plotly_chart(fig)
@@ -738,6 +739,7 @@ def plot_asset_allocation(portfolio):
 # Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
 st.sidebar.header("Portfolio Tracker Input")
 get_portfolio_data()
+
 
 
 
