@@ -605,7 +605,7 @@ def get_portfolio_data():
             "investment_amount": investment_amount
         })
     
-    if st.sidebar.button("Daten abrufen und berechnen"):
+    if st.sidebar.button("Track Portfolio"):
         portfolio = fetch_historical_data(portfolio)
         total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, sharpe_ratio, expected_return, portfolio_values = calculate_portfolio_metrics(portfolio)
 
