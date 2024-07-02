@@ -737,3 +737,4 @@ def plot_asset_allocation(portfolio):
 # Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
 st.sidebar.header("Portfolio Tracker Input")
 get_portfolio_data()
+
