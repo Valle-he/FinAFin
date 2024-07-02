@@ -607,19 +607,23 @@ def get_portfolio_data():
     
     if st.sidebar.button("Track Portfolio"):
         portfolio = fetch_historical_data(portfolio)
-        total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, sharpe_ratio, expected_return, portfolio_values = calculate_portfolio_metrics(portfolio)
+        total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, sharpe_ratio, portfolio_expected_return, avg_annual_return, portfolio_values = calculate_portfolio_metrics(portfolio)
 
         # Ergebnisse auf der Hauptseite anzeigen
         st.header("Portfolio Performance Metrics")
         st.subheader("Summary")
         st.markdown("---")
         st.write(f"**Total Portfolio Value:** ${total_value:,.2f}")
-        st.write(f"**Portfolio Return:** {portfolio_return * 100:.2f}%")
         st.write(f"**Unrealized Gains/Losses:** ${total_unrealized:,.2f}")
+        st.markdown()
+        st.write(f"**Total Portfolio Return:** {portfolio_return * 100:.2f}%")
+        st.write(f"**Expected Portfolio Return (p.a.):** {portfolio_expected_return * 100:.2f}%")
+        st.write(f"**Average Portfolio Return (p.a.):** {avg_annual_return * 100:.2f}%")
+        st.markdown()
         st.write(f"**Current Portfolio Volatility:** {current_volatility * 100:.2f}%")
         st.write(f"**Average Portfolio Volatility:** {average_volatility * 100:.2f}%")
-        st.write(f"**Portfolio Sharpe Ratio:** {sharpe_ratio:.2f}")
-        st.write(f"**Expected Return (p.a.):** {expected_return * 100:.2f}%")
+        st.markdown()
+        st.write(f"**Current Portfolio Sharpe Ratio:** {sharpe_ratio:.2f}")
 
         # Grafiken anzeigen
         st.header("Portfolio Performance Charts")
@@ -668,6 +672,11 @@ def calculate_portfolio_metrics(portfolio):
     current_volatility = np.std(daily_returns) * np.sqrt(252)
     average_volatility = np.mean(np.std(daily_returns) * np.sqrt(252))
 
+    # Berechnung des durchschnittlichen jährlichen Returns
+    days_held = (datetime.today() - start_date).days
+    years_held = days_held / 365.25
+    avg_annual_return = ((total_value / total_investment) ** (1 / years_held)) - 1
+
     # Sharpe Ratio berechnen
     tickers = [stock['ticker'] for stock in portfolio]
     investment_dates = [stock['investment_date'] for stock in portfolio]
@@ -707,7 +716,7 @@ def calculate_portfolio_metrics(portfolio):
     portfolio_expected_return = expected_return(weights, log_returns)
     portfolio_sharpe_ratio = sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
 
-    return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, portfolio_values
+    return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, avg_annual_return, portfolio_values
 
 # Grafische Darstellung der Portfolio-Performance
 def plot_portfolio_performance(portfolio_values):
@@ -729,6 +738,7 @@ def plot_asset_allocation(portfolio):
 # Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
 st.sidebar.header("Portfolio Tracker Input")
 get_portfolio_data()
+
 
 
 
