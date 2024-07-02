@@ -656,12 +656,24 @@ def calculate_portfolio_metrics(portfolio):
         # Berechnung der Position Value
         stock['data']['Position Value'] = stock['data']['Adj Close'] * quantity
 
+        # Add the initial investment value to the portfolio values
         if portfolio_values.empty:
             portfolio_values = stock['data'][['Position Value']].copy()
+            portfolio_values.rename(columns={'Position Value': stock['ticker']}, inplace=True)
         else:
-            portfolio_values = portfolio_values.join(stock['data'][['Position Value']], how='outer', rsuffix=f"_{stock['ticker']}")
+            portfolio_values = portfolio_values.join(stock['data'][['Position Value']].rename(columns={'Position Value': stock['ticker']}), how='outer')
 
         total_investment += stock['investment_amount']
+
+        # Berechnung des aktuellen Wertes und der unrealisierten Gewinne/Verluste
+        current_price = stock['data']['Adj Close'].iloc[-1]
+        current_value = quantity * current_price
+        unrealized_gain_loss = current_value - stock['investment_amount']
+
+        stock['current_value'] = current_value
+        stock['unrealized_gain_loss'] = unrealized_gain_loss
+        total_value += current_value
+        total_unrealized += unrealized_gain_loss
 
     portfolio_values.fillna(method='ffill', inplace=True)
     portfolio_values.fillna(0, inplace=True)
@@ -669,7 +681,6 @@ def calculate_portfolio_metrics(portfolio):
     portfolio_values['Total'] = portfolio_values.sum(axis=1)
 
     # Portfoliowert und -metriken berechnen
-    total_value = portfolio_values['Total'].iloc[-1]
     portfolio_return = (total_value - total_investment) / total_investment
     daily_returns = portfolio_values['Total'].pct_change().dropna()
     current_volatility = np.std(daily_returns) * np.sqrt(252)
@@ -729,7 +740,7 @@ def plot_portfolio_performance(portfolio_values):
 # Grafische Darstellung der Asset-Allokation
 def plot_asset_allocation(portfolio):
     labels = [stock['ticker'] for stock in portfolio]
-    sizes = [stock['data']['Position Value'].iloc[-1] for stock in portfolio]
+    sizes = [stock['current_value'] for stock in portfolio]
 
     fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3)])
     fig.update_layout(title_text='Asset Allocation')
