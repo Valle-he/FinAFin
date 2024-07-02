@@ -627,7 +627,7 @@ def get_portfolio_data():
 
         # Grafiken anzeigen
         st.header("Portfolio Performance Charts")
-        plot_portfolio_performance(portfolio_values)
+        plot_portfolio_performance(portfolio_values, total_investment)
         plot_asset_allocation(portfolio)
 
 # Historische Daten abrufen
@@ -642,21 +642,18 @@ def fetch_historical_data(portfolio):
 def calculate_portfolio_metrics(portfolio):
     total_investment = 0
     total_value = 0
-    total_unrealized = 0
 
     portfolio_values = pd.DataFrame()
 
-    start_date = min(datetime.strptime(stock['investment_date'].strftime('%Y-%m-%d'), "%Y-%m-%d") for stock in portfolio)
+    start_date = min(stock['investment_date'] for stock in portfolio)
     end_date = datetime.today().strftime('%Y-%m-%d')
 
     for stock in portfolio:
         initial_price = stock['data']['Adj Close'].iloc[0]
         quantity = stock['investment_amount'] / initial_price
 
-        # Berechnung der Position Value
         stock['data']['Position Value'] = stock['data']['Adj Close'] * quantity
 
-        # Add the initial investment value to the portfolio values
         if portfolio_values.empty:
             portfolio_values = stock['data'][['Position Value']].copy()
             portfolio_values.rename(columns={'Position Value': stock['ticker']}, inplace=True)
@@ -664,42 +661,31 @@ def calculate_portfolio_metrics(portfolio):
             portfolio_values = portfolio_values.join(stock['data'][['Position Value']].rename(columns={'Position Value': stock['ticker']}), how='outer')
 
         total_investment += stock['investment_amount']
-
-        # Berechnung des aktuellen Wertes und der unrealisierten Gewinne/Verluste
         current_price = stock['data']['Adj Close'].iloc[-1]
         current_value = quantity * current_price
-        unrealized_gain_loss = current_value - stock['investment_amount']
-
         stock['current_value'] = current_value
-        stock['unrealized_gain_loss'] = unrealized_gain_loss
         total_value += current_value
-        total_unrealized += unrealized_gain_loss
 
-    portfolio_values.fillna(method='ffill', inplace=True)
     portfolio_values.fillna(0, inplace=True)
-
     portfolio_values['Total'] = portfolio_values.sum(axis=1)
 
-    # Portfoliowert und -metriken berechnen
+    total_unrealized = total_value - total_investment
     portfolio_return = (total_value - total_investment) / total_investment
     daily_returns = portfolio_values['Total'].pct_change().dropna()
     current_volatility = np.std(daily_returns) * np.sqrt(252)
     average_volatility = np.mean(np.std(daily_returns) * np.sqrt(252))
 
-    # Berechnung des durchschnittlichen jährlichen Returns
     days_held = (datetime.today() - start_date).days
     years_held = days_held / 365.25
     avg_annual_return = ((total_value / total_investment) ** (1 / years_held)) - 1
 
-    # Sharpe Ratio berechnen
     tickers = [stock['ticker'] for stock in portfolio]
-    end_date = datetime.today()
-    start_date = min(datetime.strptime(stock['investment_date'].strftime('%Y-%m-%d'), "%Y-%m-%d") for stock in portfolio)
+    start_date = min(stock['investment_date'] for stock in portfolio)
 
     adj_close_df = pd.DataFrame()
 
     for ticker in tickers:
-        data = yf.download(ticker, start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
+        data = yf.download(ticker, start=start_date.strftime('%Y-%m-%d'), end=end_date)
         adj_close_df[ticker] = data['Adj Close']
 
     log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
@@ -724,7 +710,7 @@ def calculate_portfolio_metrics(portfolio):
         return None
 
     num_assets = len(tickers)
-    weights = np.array([stock['data']['Position Value'].iloc[-1] for stock in portfolio]) / sum([stock['data']['Position Value'].iloc[-1] for stock in portfolio])
+    weights = np.array([stock['current_value'] for stock in portfolio]) / total_value
 
     portfolio_expected_return = expected_return(weights, log_returns)
     portfolio_sharpe_ratio = sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
@@ -732,7 +718,7 @@ def calculate_portfolio_metrics(portfolio):
     return total_value, portfolio_return, total_unrealized, current_volatility, average_volatility, portfolio_sharpe_ratio, portfolio_expected_return, avg_annual_return, portfolio_values, total_investment
 
 # Grafische Darstellung der Portfolio-Performance
-def plot_portfolio_performance(portfolio_values):
+def plot_portfolio_performance(portfolio_values, total_investment):
     fig = px.line(portfolio_values, y='Total', title='Kumulative Portfolio-Performance')
     fig.update_layout(xaxis_title='Datum', yaxis_title='Gesamtwert')
     st.plotly_chart(fig)
