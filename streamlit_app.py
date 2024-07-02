@@ -727,7 +727,7 @@ def plot_asset_allocation(portfolio):
 # Streamlit App
 
 # Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
-st.sidebar.header("Portfolio Management")
+st.sidebar.header("Portfolio Management Input")
 get_portfolio_data()
 
 
