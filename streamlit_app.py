@@ -580,7 +580,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from scipy.optimize import minimize
 from fredapi import Fred
 import plotly.express as px
@@ -675,7 +675,7 @@ def calculate_portfolio_metrics(portfolio):
     current_volatility = np.std(daily_returns) * np.sqrt(252)
     average_volatility = np.mean(np.std(daily_returns) * np.sqrt(252))
 
-    days_held = (datetime.today() - start_date).days
+    days_held = (datetime.today().date() - start_date).days
     years_held = days_held / 365.25
     avg_annual_return = ((total_value / total_investment) ** (1 / years_held)) - 1
 
@@ -737,4 +737,5 @@ def plot_asset_allocation(portfolio):
 # Seitenleiste für die Eingabe der Portfolio-Daten und "Berechnen" Button
 st.sidebar.header("Portfolio Tracker Input")
 get_portfolio_data()
+
 
