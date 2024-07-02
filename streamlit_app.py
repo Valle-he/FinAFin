@@ -662,10 +662,15 @@ def calculate_portfolio_metrics(portfolio):
         total_value += current_value
         total_unrealized += unrealized_gain_loss
 
-        portfolio_values[stock['ticker']] = stock['data']['Adj Close'] * quantity
+        stock['data']['Position Value'] = stock['data']['Adj Close'] * quantity
+        portfolio_values = portfolio_values.join(stock['data']['Position Value'], how='outer', rsuffix=f"_{stock['ticker']}")
 
-    portfolio_values = portfolio_values.fillna(0)
     portfolio_values['Total'] = portfolio_values.sum(axis=1)
+    portfolio_values = portfolio_values.fillna(method='ffill').fillna(0)
+
+    # Sicherstellen, dass die Werte vor der ersten Investition 0 sind
+    for stock in portfolio:
+        portfolio_values.loc[:stock['investment_date'], 'Total'] += stock['investment_amount']
 
     portfolio_return = (total_value - total_investment) / total_investment
     daily_returns = portfolio_values['Total'].pct_change().dropna()
@@ -721,7 +726,7 @@ def calculate_portfolio_metrics(portfolio):
 # Grafische Darstellung der Portfolio-Performance
 def plot_portfolio_performance(portfolio_values, total_investment):
     initial_value = total_investment
-    portfolio_values['Total'] = portfolio_values['Total'] + initial_value - portfolio_values['Total'].iloc[0]
+    portfolio_values['Total'] += initial_value - portfolio_values['Total'].iloc[0]
     fig = px.line(portfolio_values, y='Total', title='Kumulative Portfolio-Performance')
     fig.update_layout(xaxis_title='Datum', yaxis_title='Gesamtwert')
     st.plotly_chart(fig)
