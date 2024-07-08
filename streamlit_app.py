@@ -384,7 +384,7 @@ def analyze_stock(ticker):
 # Function for portfolio optimization
 def optimize_portfolio(tickers, min_weight, max_weight):
     end_date = datetime.today()
-    start_date = end_date - timedelta(days=20*365)
+    start_date = end_date - timedelta(days=10*365)
 
     adj_close_df = pd.DataFrame()
 
